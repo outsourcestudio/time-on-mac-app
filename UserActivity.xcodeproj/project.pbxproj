@@ -19,6 +19,7 @@
 		963606BA2229931400300A38 /* Bash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963606B92229931400300A38 /* Bash.swift */; };
 		963606BC2229E94300300A38 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963606BB2229E94300300A38 /* Database.swift */; };
 		963606BE2229EB3D00300A38 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963606BD2229EB3D00300A38 /* Session.swift */; };
+		9689255922305D1E00CA98A9 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9689255822305D1E00CA98A9 /* Event.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		963606B92229931400300A38 /* Bash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bash.swift; sourceTree = "<group>"; };
 		963606BB2229E94300300A38 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		963606BD2229EB3D00300A38 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
+		9689255822305D1E00CA98A9 /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +85,7 @@
 				963606B92229931400300A38 /* Bash.swift */,
 				963606BB2229E94300300A38 /* Database.swift */,
 				963606BD2229EB3D00300A38 /* Session.swift */,
+				9689255822305D1E00CA98A9 /* Event.swift */,
 			);
 			path = UserActivity;
 			sourceTree = "<group>";
@@ -167,6 +170,7 @@
 				8E6C5430222E9D8A00B8BC9B /* Extensions.swift in Sources */,
 				8E0BA1D3222E855100C7BA19 /* DayView.swift in Sources */,
 				963606A9222983D400300A38 /* ViewController.swift in Sources */,
+				9689255922305D1E00CA98A9 /* Event.swift in Sources */,
 				963606BE2229EB3D00300A38 /* Session.swift in Sources */,
 				963606A7222983D400300A38 /* AppDelegate.swift in Sources */,
 				963606BC2229E94300300A38 /* Database.swift in Sources */,

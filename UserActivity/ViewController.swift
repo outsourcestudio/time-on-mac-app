@@ -24,8 +24,8 @@ class ViewController: NSViewController {
         super.viewDidLoad()
         print("ViewController viewDidLoad")
         
-        logField.string = "pmset -g log|grep -e \" Notification \""
-        logField.string += "\n\n\n"
+//        logField.string = "pmset -g log|grep -e \" Notification \""
+//        logField.string += "\n\n\n"
         logField.string += Bash.shell("pmset -g log|grep -e \" Notification \"")
         
         setCurrentDate()
