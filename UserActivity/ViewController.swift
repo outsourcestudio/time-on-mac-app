@@ -12,6 +12,7 @@ class ViewController: NSViewController {
     
     @IBOutlet weak var insight_main_date: NSTextField!
     
+    @IBOutlet weak var spinner: NSProgressIndicator!
     @IBOutlet var logField: NSTextView!
     @IBOutlet weak var summedBox: NSBox!
     @IBOutlet weak var total_time: NSTextField!
@@ -29,6 +30,13 @@ class ViewController: NSViewController {
         logField.string += Bash.shell("pmset -g log|grep -e \" Notification \"")
         
         setCurrentDate()
+        
+        let appDelegate = NSApplication.shared.delegate as! AppDelegate
+        if appDelegate.mainDB.loading == true {
+            self.spinner.startAnimation(self)
+        }else{
+            self.spinner.stopAnimation(self)
+        }
     }
 
     override var representedObject: Any? {

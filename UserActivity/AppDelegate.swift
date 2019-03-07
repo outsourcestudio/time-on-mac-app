@@ -59,25 +59,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func loadDB(){
-        // Example usage:
-        let notification_output = Bash.shell("pmset -g log|grep -e \" Notification \"")
-        mainDB = Database.init(output: notification_output)
-//        let reason_output = Bash.shell("pmset -g log|grep -e \" Sleep  \" -e \" Wake  \"")
-//        mainDB.addReason(output: reason_output)
-        // Do any additional setup after loading the view.
-        let events: [Event] = []
-        mainDB.events = mainDB.generateEvents(output: notification_output, events: events, reasonType: Database.ReasonType.display)
-        print (mainDB.events.count)
-        let whoami = Bash.shell("whoami")
-//        print (whoami)
-        var bash_string = "last grep " + whoami + " | grep console"
-        bash_string = bash_string.replacingOccurrences(of: "\n", with: "",
-                                                                 options: NSString.CompareOptions.literal, range:nil)
-        print (bash_string)
-        let last_output = Bash.shell(bash_string)
-        mainDB.events = mainDB.generateEvents(output: last_output, events: mainDB.events, reasonType: Database.ReasonType.user)
-        print (mainDB.events.count)
-        
+
+        DispatchQueue.global(qos: .background).async {
+            
+            // Example usage:
+            let notification_output = Bash.shell("pmset -g log|grep -e \" Notification \"")
+            self.mainDB = Database.init(output: notification_output)
+            self.mainDB.loading = true
+            //        let reason_output = Bash.shell("pmset -g log|grep -e \" Sleep  \" -e \" Wake  \"")
+            //        mainDB.addReason(output: reason_output)
+            // Do any additional setup after loading the view.
+            let events: [Event] = []
+            self.mainDB.events = self.mainDB.generateEvents(output: notification_output, events: events, reasonType: Database.ReasonType.display)
+            print (self.mainDB.events.count)
+            
+            
+            let whoami = Bash.shell("whoami")
+            //        print (whoami)
+            var bash_string = "last grep " + whoami + " | grep console"
+            bash_string = bash_string.replacingOccurrences(of: "\n", with: "",
+                                                           options: NSString.CompareOptions.literal, range:nil)
+            //        print (bash_string)
+            var last_output = Bash.shell(bash_string)
+            self.mainDB.events = self.mainDB.generateEvents(output: last_output, events: self.mainDB.events, reasonType: Database.ReasonType.user)
+            print (self.mainDB.events.count)
+            
+            // lock screen
+            bash_string = "log show | grep loginwindow | grep lockScreen | grep \"about to call lockScreen\""
+            last_output = Bash.shell(bash_string)
+            self.mainDB.events = self.mainDB.generateEvents(output: last_output, events: self.mainDB.events, reasonType: .screen)
+            print (self.mainDB.events.count)
+            
+            // onlock screen
+            bash_string = "log show | grep loginwindow | grep screenlock"
+            last_output = Bash.shell(bash_string)
+            self.mainDB.events = self.mainDB.generateEvents(output: last_output, events: self.mainDB.events, reasonType: .screen)
+            print (self.mainDB.events.count)
+            self.mainDB.loading = false
+        }
     }
     
     @objc func togglePopover(_ sender: Any?) {

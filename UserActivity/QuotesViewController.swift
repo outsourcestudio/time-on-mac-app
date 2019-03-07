@@ -10,6 +10,7 @@ import Cocoa
 
 class QuotesViewController: NSViewController {
 
+    @IBOutlet weak var spinner: NSProgressIndicator!
     @IBOutlet weak var lastLoginLabel: NSTextField!
     @IBOutlet weak var allDataBtn: NSButton!
     @IBOutlet weak var sessionsCount: NSTextField!
@@ -17,23 +18,28 @@ class QuotesViewController: NSViewController {
     @IBOutlet weak var longestSessionsTimelabel: NSTextField!
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("QuotesViewController viewDidLoad")
+//        print("QuotesViewController viewDidLoad")
         
     }
     
     override func viewWillAppear() {
         super.viewWillAppear()
-        print("QuotesViewController viewWillAppear")
+//        print("QuotesViewController viewWillAppear")
         self.configViews()
     }
     
-    override func viewDidAppear() {
-        super.viewDidAppear()
-        print("QuotesViewController viewDidAppear")
-    }
+//    override func viewDidAppear() {
+//        super.viewDidAppear()
+//        print("QuotesViewController viewDidAppear")
+//    }
     
     func configViews(){
         let appDelegate = NSApplication.shared.delegate as! AppDelegate
+        if appDelegate.mainDB.loading == true {
+            self.spinner.startAnimation(self)
+        }else{
+            self.spinner.stopAnimation(self)
+        }
         let currentPeriod = Date().timeIntervalSince(appDelegate.mainDB.currentSession!.start_time!)
         let sessions = appDelegate.mainDB.getSessions(period: Period.todayPeriod())
         

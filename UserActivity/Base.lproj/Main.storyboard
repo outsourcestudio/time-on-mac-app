@@ -801,10 +801,18 @@
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="T8Y-0G-aGd">
+                                <rect key="frame" x="355" y="390" width="16" height="16"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="16" id="1HR-sc-ctZ"/>
+                                    <constraint firstAttribute="height" constant="16" id="jZQ-JA-NHH"/>
+                                </constraints>
+                            </progressIndicator>
                         </subviews>
                         <constraints>
                             <constraint firstItem="zBp-1h-Dgh" firstAttribute="centerX" secondItem="16S-Ib-re5" secondAttribute="centerX" id="3R3-Y3-jDj"/>
                             <constraint firstItem="D9p-Jt-8fs" firstAttribute="centerX" secondItem="16S-Ib-re5" secondAttribute="centerX" id="7Vb-wu-POx"/>
+                            <constraint firstAttribute="trailing" secondItem="T8Y-0G-aGd" secondAttribute="trailing" constant="10" id="Gz1-Ne-6wr"/>
                             <constraint firstItem="D9p-Jt-8fs" firstAttribute="top" secondItem="16S-Ib-re5" secondAttribute="top" constant="15" id="Jen-S5-OMG"/>
                             <constraint firstItem="zBp-1h-Dgh" firstAttribute="top" secondItem="Gyz-ez-ah6" secondAttribute="bottom" constant="10" id="UTd-Xi-8o6"/>
                             <constraint firstItem="Z1M-1Q-kTG" firstAttribute="centerX" secondItem="16S-Ib-re5" secondAttribute="centerX" id="ajh-np-aIq"/>
@@ -812,6 +820,7 @@
                             <constraint firstAttribute="bottom" secondItem="Z1M-1Q-kTG" secondAttribute="bottom" constant="60" id="foa-Tn-ds1"/>
                             <constraint firstItem="Gyz-ez-ah6" firstAttribute="centerX" secondItem="16S-Ib-re5" secondAttribute="centerX" id="qpI-nh-6vP"/>
                             <constraint firstItem="Gyz-ez-ah6" firstAttribute="top" secondItem="16S-Ib-re5" secondAttribute="top" constant="42" id="snL-MH-1Di"/>
+                            <constraint firstItem="T8Y-0G-aGd" firstAttribute="top" secondItem="16S-Ib-re5" secondAttribute="top" constant="10" id="tc0-qd-56v"/>
                             <constraint firstItem="3IR-dV-4Dt" firstAttribute="centerX" secondItem="16S-Ib-re5" secondAttribute="centerX" id="wkX-Ap-OIh"/>
                         </constraints>
                     </view>
@@ -821,6 +830,7 @@
                         <outlet property="longestSessionsTimelabel" destination="3IR-dV-4Dt" id="jCY-LV-4nq"/>
                         <outlet property="sessionsCount" destination="Ptw-He-md2" id="pIb-7L-nJm"/>
                         <outlet property="sessionsTimelabel" destination="eS9-3l-2nX" id="nhU-9Q-K3M"/>
+                        <outlet property="spinner" destination="T8Y-0G-aGd" id="RnQ-iu-kgI"/>
                     </connections>
                 </viewController>
                 <customObject id="iAn-Yr-CWW" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
@@ -970,7 +980,7 @@
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <size key="minSize" width="790" height="103"/>
-                                            <size key="maxSize" width="799" height="10000000"/>
+                                            <size key="maxSize" width="805" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
                                     </subviews>
@@ -983,6 +993,13 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
+                            <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="pVD-0J-oUF">
+                                <rect key="frame" x="809" y="345" width="16" height="16"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="16" id="Wrb-ju-zLC"/>
+                                    <constraint firstAttribute="height" constant="16" id="ptn-sH-3sP"/>
+                                </constraints>
+                            </progressIndicator>
                         </subviews>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="mww-T6-ukN" secondAttribute="trailing" constant="62" id="JxR-8T-jFM"/>
@@ -991,12 +1008,15 @@
                             <constraint firstItem="mww-T6-ukN" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="63" id="ZPh-Zs-Y6V"/>
                             <constraint firstItem="LM6-Vw-i8V" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" id="cB9-xL-jVL"/>
                             <constraint firstAttribute="bottom" secondItem="LM6-Vw-i8V" secondAttribute="bottom" constant="13" id="chg-wJ-TQC"/>
+                            <constraint firstAttribute="trailing" secondItem="pVD-0J-oUF" secondAttribute="trailing" constant="20" id="khj-Ul-ap3"/>
+                            <constraint firstItem="pVD-0J-oUF" firstAttribute="centerY" secondItem="mww-T6-ukN" secondAttribute="centerY" id="z7Q-fL-0dM"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="insight_main_date" destination="veW-iE-1Rc" id="TjY-06-d3d"/>
                         <outlet property="logField" destination="2d2-1R-vvo" id="pn2-bX-qd5"/>
                         <outlet property="longest_session_time" destination="Vbz-kA-CDU" id="uI2-No-Vr5"/>
+                        <outlet property="spinner" destination="pVD-0J-oUF" id="agy-f8-7sZ"/>
                         <outlet property="summedBox" destination="mww-T6-ukN" id="oAw-dc-3rB"/>
                         <outlet property="total_sessions" destination="NCh-Wc-N8D" id="L9S-m9-dvo"/>
                         <outlet property="total_time" destination="GnA-Wt-6qF" id="GtM-tk-3Lh"/>

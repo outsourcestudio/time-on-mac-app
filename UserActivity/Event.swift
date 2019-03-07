@@ -18,7 +18,7 @@ class Event {
     
     enum ReasonType{
         
-        case user, display, sreen
+        case user, display, screen
     }
     
     enum Switcher{

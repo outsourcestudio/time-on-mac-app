@@ -13,10 +13,11 @@ class Database {
     var model = [Session]()
     var currentSession:Session!
     var events = [Event]()
+    var loading:Bool = false
     
     enum ReasonType{
         
-        case user, display, sreen
+        case user, display, screen
     }
     
     enum Switcher{
@@ -46,7 +47,7 @@ class Database {
             lines.append(line)
         }
         for (_, element) in lines.enumerated() {
-            print (element)
+//            print (element)
             switch reasonType {
             case .display:
                 let t_string_array = element.components(separatedBy: " Notification ")
@@ -68,7 +69,7 @@ class Database {
                 let range = NSMakeRange(0, element.count)
                 let modString = regex.stringByReplacingMatches(in: element, options: [], range: range, withTemplate: "")
                 
-                print(modString)
+//                print(modString)
 
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy EEE MMM d HH:mm"//this your string date format
@@ -109,8 +110,23 @@ class Database {
 //                work      console                   Thu Jan  3 10:40 - shutdown  (13:53)
 //                work      console                   Wed Mar  6 07:59   still logged in
 //                work      console                   Tue Mar  5 23:37 - 00:38  (01:00)
-            case .sreen:
-                _  = 1
+            case .screen:
+                let on = element.contains("about to call lockScreen") ? true : false
+                let t_string_array = element.components(separatedBy: " 0x")
+                let time_string = t_string_array[0]//.replacingOccurrences(of: " ", with: "",
+//                                                                         options: NSString.CompareOptions.literal, range:nil)
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSSZ"
+                dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+                //"2019-03-05 09:41:44.982274+0200"
+                let date = dateFormatter.date(from: time_string)
+                
+                let event = Event()
+                event.event_time = date // пишем время по гринвичу!!
+                event.reason = .screen
+                event.switcher = on ? Event.Switcher.on : Event.Switcher.off
+                mutable_events.append(event)
+                
             }
         }
         return mutable_events
