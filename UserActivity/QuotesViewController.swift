@@ -34,6 +34,9 @@ class QuotesViewController: NSViewController {
 //    }
     
     func configViews(){
+        
+        return
+        
         let appDelegate = NSApplication.shared.delegate as! AppDelegate
         if appDelegate.mainDB.loading == true {
             self.spinner.startAnimation(self)

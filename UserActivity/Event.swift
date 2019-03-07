@@ -14,7 +14,6 @@ class Event {
     var description: String?
     var reason: ReasonType?
     var switcher: Switcher?
-    var is_start: Bool?
     
     enum ReasonType{
         

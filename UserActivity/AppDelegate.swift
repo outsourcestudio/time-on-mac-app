@@ -18,7 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         pop.behavior = .transient
         return pop
     }()
-    var mainDB: Database!
+    var mainDB: Database! = Database()
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         loadDB()
@@ -64,6 +64,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             
             // Example usage:
             let notification_output = Bash.shell("pmset -g log|grep -e \" Notification \"")
+//            self.mainDB = Database()
             self.mainDB = Database.init(output: notification_output)
             self.mainDB.loading = true
             //        let reason_output = Bash.shell("pmset -g log|grep -e \" Sleep  \" -e \" Wake  \"")
@@ -71,6 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Do any additional setup after loading the view.
             let events: [Event] = []
             self.mainDB.events = self.mainDB.generateEvents(output: notification_output, events: events, reasonType: Database.ReasonType.display)
+            print ("---1---")
             print (self.mainDB.events.count)
             
             
@@ -82,20 +84,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             //        print (bash_string)
             var last_output = Bash.shell(bash_string)
             self.mainDB.events = self.mainDB.generateEvents(output: last_output, events: self.mainDB.events, reasonType: Database.ReasonType.user)
+            print ("---2---")
             print (self.mainDB.events.count)
             
             // lock screen
             bash_string = "log show | grep loginwindow | grep lockScreen | grep \"about to call lockScreen\""
             last_output = Bash.shell(bash_string)
             self.mainDB.events = self.mainDB.generateEvents(output: last_output, events: self.mainDB.events, reasonType: .screen)
+            print ("---3-1---")
             print (self.mainDB.events.count)
             
             // onlock screen
             bash_string = "log show | grep loginwindow | grep screenlock"
             last_output = Bash.shell(bash_string)
             self.mainDB.events = self.mainDB.generateEvents(output: last_output, events: self.mainDB.events, reasonType: .screen)
+            print ("---3-2---")
             print (self.mainDB.events.count)
             self.mainDB.loading = false
+            let nc = NotificationCenter.default
+            nc.post(name: NSNotification.Name("DatabaseHasChanged"), object: nil)
         }
     }
     

@@ -8,6 +8,7 @@
 
 import Cocoa
 
+
 class ViewController: NSViewController {
     
     @IBOutlet weak var insight_main_date: NSTextField!
@@ -25,9 +26,11 @@ class ViewController: NSViewController {
         super.viewDidLoad()
         print("ViewController viewDidLoad")
         
+        NotificationCenter.default.addObserver(self, selector: #selector(updateInsight(_:)), name: NSNotification.Name(rawValue: "DatabaseHasChanged"), object: nil)
+        
 //        logField.string = "pmset -g log|grep -e \" Notification \""
 //        logField.string += "\n\n\n"
-        logField.string += Bash.shell("pmset -g log|grep -e \" Notification \"")
+//        logField.string += Bash.shell("pmset -g log|grep -e \" Notification \"")
         
         setCurrentDate()
         
@@ -36,6 +39,8 @@ class ViewController: NSViewController {
             self.spinner.startAnimation(self)
         }else{
             self.spinner.stopAnimation(self)
+            let nc = NotificationCenter.default
+            nc.post(name: NSNotification.Name("DatabaseHasChanged"), object: nil)
         }
     }
 
@@ -49,6 +54,11 @@ class ViewController: NSViewController {
 //        let appDelegate = NSApplication.shared.delegate as! AppDelegate
         let date = Date()
         insight_main_date.stringValue = date.monthAsString()
+        
+        let appDelegate = NSApplication.shared.delegate as! AppDelegate
+        if appDelegate.mainDB.loading == true {
+            return
+        }
         
         let period = Period(start: Period.periodLastDays(days: 365).startDate, end: Date())
         updateSummedValues(period: period)
@@ -87,18 +97,25 @@ class ViewController: NSViewController {
     
     @IBAction func yearAction(_ sender: Any) {
         self.clearViews()
+        let appDelegate = NSApplication.shared.delegate as! AppDelegate
+        if appDelegate.mainDB.loading == true{return}
         let period = Period(start: Period.periodLastDays(days: 365).startDate, end: Date())
         updateSummedValues(period: period)
     }
     
     @IBAction func monthAction(_ sender: Any) {
         self.clearViews()
+        let appDelegate = NSApplication.shared.delegate as! AppDelegate
+        if appDelegate.mainDB.loading == true{return}
         let period = Period(start: Period.periodLastDays(days: 30).startDate, end: Date())
         updateSummedValues(period: period)
     }
     
     @IBAction func weekAction(_ sender: Any) {
         self.clearViews()
+        
+        let appDelegate = NSApplication.shared.delegate as! AppDelegate
+        if appDelegate.mainDB.loading == true{return}
         
         if self.weekView.count == 0 {
             let size = NSSize(width: self.view.bounds.width - 100, height: 65)
@@ -134,6 +151,9 @@ class ViewController: NSViewController {
     @IBAction func dayAction(_ sender: Any) {
         self.clearViews()
         
+        let appDelegate = NSApplication.shared.delegate as! AppDelegate
+        if appDelegate.mainDB.loading == true{return}
+        
         if dayView?.superview == nil {
             let size = NSSize(width: self.view.bounds.width - 100, height: 65)
             dayView = DayView.createFromNib()!
@@ -165,7 +185,45 @@ class ViewController: NSViewController {
             day.isHidden = true
         })
     }
+    @objc func updateInsight(_ sender: Notification) {
+        // Do what you need, including updating IBOutlets
+        let appDelegate = NSApplication.shared.delegate as! AppDelegate
+//        appDelegate.mainDB.events.sorted(by: { $0.event_time > $1.event_time})
+        appDelegate.mainDB.events.sort(by: { $0.event_time!.compare($1.event_time!) == .orderedAscending })
+        print (appDelegate.mainDB.events.count)
+        var event_string = ""
+        for (_, element) in appDelegate.mainDB.events.enumerated() {
+            event_string = event_string + formatEventDescription(event: element) + "\n"
+        }
+        DispatchQueue.main.async {
+            self.logField.string = event_string
+            appDelegate.mainDB.model = appDelegate.mainDB.generateSessions(events: appDelegate.mainDB.events)
+        }
+        
+    }
     
+    func formatEventDescription(event: Event) -> String {
+        var reason = ""
+        var switcher = ""
+        switch event.reason! {
+        case Event.ReasonType.user:
+            reason = "User"
+        case Event.ReasonType.display:
+            reason = "Sleep"
+        case Event.ReasonType.screen:
+            reason = "Screen Lock"
+        }
+        
+        switch event.switcher! {
+        case Event.Switcher.on:
+            switcher = "on"
+        case Event.Switcher.off:
+            switcher = "off"
+        }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ssZZZ"
+        return (reason + " " + switcher + " " + dateFormatter.string(from: event.event_time!))
+    }
 }
 
 

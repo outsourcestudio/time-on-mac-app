@@ -36,8 +36,8 @@ class Database {
             lines.append(line)
         }
 //        print(lines)   // "[Line 1, Line 2, Line 3]"
-        model = generateSessions(lines: lines)
-        print (model.count)
+//        model = generateSessions(lines: lines)
+//        print (model.count)
     }
     
     func generateEvents(output: String, events: [Event], reasonType: ReasonType) -> [Event] {
@@ -111,7 +111,7 @@ class Database {
 //                work      console                   Wed Mar  6 07:59   still logged in
 //                work      console                   Tue Mar  5 23:37 - 00:38  (01:00)
             case .screen:
-                let on = element.contains("about to call lockScreen") ? true : false
+                let on = element.contains("about to call lockScreen") ? false : true
                 let t_string_array = element.components(separatedBy: " 0x")
                 let time_string = t_string_array[0]//.replacingOccurrences(of: " ", with: "",
 //                                                                         options: NSString.CompareOptions.literal, range:nil)
@@ -150,28 +150,25 @@ class Database {
         return 0
     }
     
-    func generateSessions(lines: [String]) -> [Session]{
+    func generateSessions(events: [Event]) -> [Session]{
         var sessions: [Session] = []
         var t_session = Session()
-        for (_, element) in lines.enumerated() {
+        for (_, element) in events.enumerated() {
 //            print(index, ":", element)
-            let t_string_array = element.components(separatedBy: " Notification ")
-            let time_string = t_string_array[0].replacingOccurrences(of: " ", with: "",
-                                                                     options: NSString.CompareOptions.literal, range:nil)
-            let date = date_from_string(date_string: time_string)
-            if element.contains("Display is turned on"){
+            if element.switcher == Event.Switcher.on {
                 t_session = Session()
-                t_session.start_time = date
-            } else if element.contains("Display is turned off"){
-                t_session.end_time = date
+                t_session.start_time = element.event_time
+
+            } else {
+                t_session.end_time = element.event_time
                 if (t_session.start_time != nil) {
                     t_session.period = t_session.end_time?.timeIntervalSince(t_session.start_time!)
                 }
                 if t_session.start_time != nil && t_session.end_time != nil{
-                   sessions.append(t_session)
+                    sessions.append(t_session)
                 }
             }
-            let calendar = Calendar.current
+            
             if t_session.start_time != nil && t_session.end_time == nil /*&& calendar.isDateInToday(t_session.start_time!) */{
                 currentSession = t_session
             }
