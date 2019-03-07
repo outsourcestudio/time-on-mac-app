@@ -52,11 +52,11 @@ class ViewController: NSViewController {
         let currentPeriod = Date().timeIntervalSince(appDelegate.mainDB.currentSession!.start_time!)
         let sessions = appDelegate.mainDB.getSessions(period: period)
         
-        if sessions.count > 0{
+//        if sessions.count + 1 > 0{
             total_sessions.stringValue = "\(sessions.count + 1) sessions"
-        }else{
-            total_sessions.stringValue = "not found sessions"
-        }
+//        }else{
+//            total_sessions.stringValue = "not found sessions"
+//        }
         
         var allTime:TimeInterval = 0
         for session in sessions {

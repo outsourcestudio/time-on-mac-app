@@ -79,3 +79,33 @@ extension NibLoadable where Self: NSView {
         return views.last as? Self
     }
 }
+
+
+extension String {
+    
+    func toSecond(format:String) -> Int {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = format
+        let calendar = Calendar.current
+        if let d = dateFormatter.date(from: self) {
+            var components = calendar.dateComponents([.hour,.minute,.second], from: d)
+            let res:Int = components.hour! * 3600 + components.minute! * 60 + components.second!
+            return res
+        }
+
+        return 0
+    }
+    
+    func indexOf(target: String) -> Int? {
+        let range = (self as NSString).range(of: target)
+        guard Range.init(range) != nil else {
+            return nil
+        }
+        return range.location
+    }
+    
+    func substring(with nsrange: NSRange) -> String? {
+        guard let range = Range(nsrange, in: self) else { return nil }
+        return String(self[range])
+    }
+}

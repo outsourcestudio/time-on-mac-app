@@ -71,19 +71,32 @@ class Database {
                 print(modString)
 
                 let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy EEEE MMM d HH:mm"//this your string date format
+                dateFormatter.dateFormat = "yyyy EEE MMM d HH:mm"//this your string date format
                 dateFormatter.timeZone = TimeZone.current // пишем время по гринвичу!!
-                let t_string_array = element.components(separatedBy: " - ")
+                let t_string_array = modString.components(separatedBy: " - ").count < 2 ? modString.components(separatedBy: "   still logged in") : modString.components(separatedBy: " - ")
                 var date_string = t_string_array[0]
                 let year = Date()
                 date_string = year.year + " " + date_string // ПРОВЕРИТЬ НА БУДУЩЕЕ
-                let date = dateFormatter.date(from: date_string)
-//                print (date!)
+                var date = dateFormatter.date(from: date_string)
+                if date?.compare(Date()) == .orderedDescending && date != nil { // если дата больше текущей отнимаем год
+                    date = Calendar.current.date(byAdding: .year, value: -1, to: date!)!
+                }
                 let event = Event()
                 event.reason = Event.ReasonType.user
                 event.switcher = Event.Switcher.on
                 event.event_time = date
                 mutable_events.append(event)
+                
+                if modString.contains("(") && modString.contains(")"), let date = date {
+                    let endSecond = getSecondFromTime(string: modString)
+                    let calendar = Calendar.current
+                    let endDate = calendar.date(byAdding: .second, value: endSecond, to: date)!
+                    let event = Event()
+                    event.reason = Event.ReasonType.user
+                    event.switcher = Event.Switcher.off
+                    event.event_time = endDate
+                    mutable_events.append(event)
+                }
                 
                 // end session time logic
                 // 1 - check for latest "still logged in"
@@ -101,6 +114,24 @@ class Database {
             }
         }
         return mutable_events
+    }
+    
+    private func getSecondFromTime(string:String) -> Int{
+        if let pos_f = string.indexOf(target: "("), let pos_e = string.indexOf(target: ")") {
+            if let res = string.substring(with: NSRange(location: pos_f+1, length: pos_e - pos_f-1)) {
+                let a = res.components(separatedBy: "+")
+                var daySecond = 0
+                 if a.count > 1, let dayStr = a.first, let days = Int(dayStr) {
+                    let timeStr = a[1]
+                    daySecond = days * 24 * 60 * 60 + timeStr.toSecond(format: "HH:mm")
+                }else if a.count > 0 {
+                    let timeStr = a[0]
+                    daySecond = timeStr.toSecond(format: "HH:mm")
+                }
+                return daySecond
+            }
+        }
+        return 0
     }
     
     func generateSessions(lines: [String]) -> [Session]{
