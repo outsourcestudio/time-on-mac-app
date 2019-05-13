@@ -2,91 +2,108 @@
 //  QuotesViewController.swift
 //  UserActivity
 //
-//  Created by toxa on 3/4/19.
-//  Copyright © 2019 Sergiy Kurash. All rights reserved.
+//  Created by RoboApps on 3/4/19.
+//  Copyright © 2019 RoboApps. All rights reserved.
 //
 
 import Cocoa
 
 class QuotesViewController: NSViewController {
-
-    @IBOutlet weak var spinner: NSProgressIndicator!
-    @IBOutlet weak var lastLoginLabel: NSTextField!
+    
+    @IBOutlet weak var dailyStatsLabel: NSTextField!
+    @IBOutlet weak var userImage: NSImageView!
+    @IBOutlet weak var userNameField: NSTextField!
+    @IBOutlet weak var userStatusField: NSTextField!
+    
+    @IBOutlet weak var circleStatsBox: NSView!
+//    @IBOutlet weak var spinner: NSProgressIndicator!
     @IBOutlet weak var allDataBtn: NSButton!
     @IBOutlet weak var sessionsCount: NSTextField!
     @IBOutlet weak var sessionsTimelabel: NSTextField!
     @IBOutlet weak var longestSessionsTimelabel: NSTextField!
+    
+    var progressRing: CircleView!
+    var count: CGFloat = 0
+    var timer: Timer!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-//        print("QuotesViewController viewDidLoad")
         
+        self.view.wantsLayer = true
+        self.view.layer?.backgroundColor = NSColor.hex("#f5f6fa").cgColor
+        
+        self.dailyStatsLabel.stringValue = "Daily Stats".localized()
+        
+        progressRing = CircleView(frame: self.circleStatsBox.bounds, innerTrackColor: NSColor.hex("#426eff"), lineWidth: 15)
+        self.circleStatsBox.wantsLayer = true
+        self.circleStatsBox.layer?.addSublayer(progressRing)
+        
+        self.allDataBtn.isBordered = false
+        self.allDataBtn.wantsLayer = true
+        self.allDataBtn.layer?.cornerRadius = 14.0
+        self.allDataBtn.layer?.borderWidth = 1
+        self.allDataBtn.layer?.borderColor = NSColor.hex("#202947").cgColor
+        self.allDataBtn.layer?.masksToBounds = true
+        self.allDataBtn.layer?.backgroundColor = NSColor.hex("#f5f6fa").cgColor
+        self.allDataBtn.cell?.backgroundStyle = NSView.BackgroundStyle.dark
+        (self.allDataBtn.cell as! NSButtonCell).isBordered = false
+        (self.allDataBtn.cell as! NSButtonCell).backgroundColor=NSColor.clear
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .center
+        self.allDataBtn.attributedTitle = NSMutableAttributedString(string: "All sessions".localized(),
+                                                                    attributes: [NSAttributedString.Key.foregroundColor: NSColor.hex("#202947"),
+                                                                                 NSAttributedString.Key.paragraphStyle: paragraphStyle,
+                                                                                 NSAttributedString.Key.font: NSFont(name: "SFProDisplay-Regular", size: 14.0)!])
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(updateView), name: NSNotification.Name(rawValue: "DatabaseHasChanged"), object: nil)
+
     }
     
     override func viewWillAppear() {
         super.viewWillAppear()
-//        print("QuotesViewController viewWillAppear")
         self.configViews()
     }
     
-//    override func viewDidAppear() {
-//        super.viewDidAppear()
-//        print("QuotesViewController viewDidAppear")
-//    }
+    @objc func updateView(){
+        print("QuotesViewController updateView")
+        configViews()
+    }
     
     func configViews(){
         
-        return
+        self.userImage.image = getUserImage()
+        self.userImage.wantsLayer = true
+        self.userImage.layer?.cornerRadius = self.userImage.frame.width / 2
+        self.userImage.layer?.masksToBounds = true
         
-        let appDelegate = NSApplication.shared.delegate as! AppDelegate
-        if appDelegate.mainDB.loading == true {
-            self.spinner.startAnimation(self)
-        }else{
-            self.spinner.stopAnimation(self)
+        self.userNameField.stringValue = NSFullUserName()
+
+        let todayPeriod = Period.todayPeriod()
+        var sessions = RouterDB().getSessions(period: todayPeriod)
+        if let sess = createCurrentSession(period: todayPeriod) {
+            sessions.append(sess)
         }
-        let currentPeriod = Date().timeIntervalSince(appDelegate.mainDB.currentSession!.start_time!)
-        let sessions = appDelegate.mainDB.getSessions(period: Period.todayPeriod())
         
-        sessionsCount.stringValue = "\(sessions.count + 1)"
+        if sessions.count == 0 {return}
+        
+        progressRing.setSessions(sessions: sessions)
         
         var allTime:TimeInterval = 0
         for session in sessions {
             allTime += session.period ?? 0
         }
-        allTime += currentPeriod
         
-        var (h,m,_) = allTime.intervalAsList()
+        let maxPeriod = maxPerid(sessions: sessions)
+        
+        let (h,m,_) = maxPeriod.intervalAsList()
         if h > 0 {
-            sessionsTimelabel.stringValue = String(format: "%0.2dh %0.2dm",h,m)
+            longestSessionsTimelabel.stringValue = "Longest session".localized() + String(format: " %0.2d",h) + "h".localized() + String(format: " %0.2d",m) + "m".localized()
         }else{
-            sessionsTimelabel.stringValue = String(format: "%0.2dm",m)
+            longestSessionsTimelabel.stringValue = "Longest session".localized() + String(format: " %0.2d",m) + "m".localized()
         }
-        
-        
-        let maxPeriod = appDelegate.mainDB.maxPerid(period: Period.todayPeriod())
-        
-        (h,m,_) = max(currentPeriod, maxPeriod).intervalAsList()
-        if h > 0 {
-            longestSessionsTimelabel.stringValue = String(format: "Longest session %0.2dh %0.2dm",h,m)
-        }else{
-            longestSessionsTimelabel.stringValue = String(format: "Longest session %0.2dm",m)
-        }
-        
-        let calendar = Calendar.current
-        var sub = ""
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-ddHH:mm"
-        
-        if let ses = appDelegate.mainDB.currentSession, let start = ses.start_time {
-            if calendar.isDateInToday(start) {
-                sub = "today"
-                dateFormatter.dateFormat = "HH:mm"
-            }else if calendar.isDateInYesterday(start) {
-                sub = "yesterday"
-                dateFormatter.dateFormat = "HH:mm"
-            }
-            lastLoginLabel.stringValue = "Last login: \(sub) \(dateFormatter.string(from: start)) \(NSUserName())"
-        }
-        
+        let curses = sessions.count > 1 ? sessions[sessions.count-2] : sessions[0]
+        userStatusField.stringValue = "last log in".localized() + " " + curses.start_time.toString(format: "HH:mm")
+        userStatusField.textColor = NSColor.hex("#3FC875")
     }
     
     @IBAction func allDataAction(_ sender: Any) {

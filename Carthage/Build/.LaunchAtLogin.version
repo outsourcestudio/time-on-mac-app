@@ -1,0 +1,18 @@
+{
+  "Mac" : [
+    {
+      "name" : "LaunchAtLogin",
+      "hash" : "c75b1746dd2eee2867d4c539e1573f1ac1fd4e99d12af61b9beebaad806caece"
+    }
+  ],
+  "watchOS" : [
+
+  ],
+  "tvOS" : [
+
+  ],
+  "commitish" : "v2.5.0",
+  "iOS" : [
+
+  ]
+}

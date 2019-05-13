@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner"/>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <customView id="c22-O7-iKe" customClass="DayView" customModule="UserActivity" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="758" height="30"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <subviews>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nCC-72-BeW">
+                    <rect key="frame" x="681" y="8" width="74" height="15"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="70" id="KjD-Jz-aZP"/>
+                        <constraint firstAttribute="height" constant="15" id="tfq-fc-Sqt"/>
+                    </constraints>
+                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="12.12.95" id="OG8-xM-7gd">
+                        <font key="font" size="12" name="SFProDisplay-Medium"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <customView translatesAutoresizingMaskIntoConstraints="NO" id="xkb-mM-KXQ">
+                    <rect key="frame" x="77" y="5" width="606" height="20"/>
+                </customView>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xfn-gQ-bbn">
+                    <rect key="frame" x="5" y="6" width="74" height="18"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="18" id="04g-yI-eGz"/>
+                        <constraint firstAttribute="width" constant="70" id="z6Y-Nw-hW6"/>
+                    </constraints>
+                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="12.12.95" id="nzW-Pq-EYA">
+                        <font key="font" size="12" name="SFProDisplay-Medium"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+            </subviews>
+            <constraints>
+                <constraint firstItem="xkb-mM-KXQ" firstAttribute="leading" secondItem="xfn-gQ-bbn" secondAttribute="trailing" id="0Uf-Uv-6m8"/>
+                <constraint firstItem="nCC-72-BeW" firstAttribute="leading" secondItem="xkb-mM-KXQ" secondAttribute="trailing" id="2Pz-eN-5A0"/>
+                <constraint firstItem="xfn-gQ-bbn" firstAttribute="centerY" secondItem="c22-O7-iKe" secondAttribute="centerY" id="2h1-AK-bgx"/>
+                <constraint firstItem="xfn-gQ-bbn" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="7" id="k5R-0c-XlR"/>
+                <constraint firstItem="xkb-mM-KXQ" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" constant="5" id="pIA-Hg-HI1"/>
+                <constraint firstAttribute="trailing" secondItem="nCC-72-BeW" secondAttribute="trailing" constant="5" id="pfQ-uV-g3L"/>
+                <constraint firstAttribute="bottom" secondItem="xkb-mM-KXQ" secondAttribute="bottom" constant="5" id="qlS-UV-Be2"/>
+                <constraint firstItem="nCC-72-BeW" firstAttribute="centerY" secondItem="c22-O7-iKe" secondAttribute="centerY" id="rED-UR-Uae"/>
+            </constraints>
+            <connections>
+                <outlet property="dayDateLabel" destination="xfn-gQ-bbn" id="5lq-Vb-xzI"/>
+                <outlet property="hoursLabel" destination="nCC-72-BeW" id="gTI-Wk-J0Y"/>
+                <outlet property="sessionView" destination="xkb-mM-KXQ" id="tOu-tx-GQI"/>
+            </connections>
+            <point key="canvasLocation" x="92" y="59"/>
+        </customView>
+    </objects>
+</document>

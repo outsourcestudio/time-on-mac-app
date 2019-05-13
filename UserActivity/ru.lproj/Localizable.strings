@@ -1,0 +1,41 @@
+/*
+ Localizable.strings
+ TimeMatters
+ 
+ Created by RoboApps on 4/1/19.
+ Copyright © 2019 RoboApps. All rights reserved.
+ */
+
+"Version" = "Version";
+
+"All sessions" = "All sessions";
+"Longest session" = "Longest session";
+"last log in" = "last log in";
+"Daily Stats" = "Daily Stats";
+"session" = "session";
+"sessions" = "sessions";
+"m" = "m"; //минуты
+"h" = "h"; //часы
+
+"hr" = "hr";
+
+"Year" = "Year";
+"Month" = "Month";
+"Week" = "Week";
+"hours" = "hours";
+"min" = "min";
+"longest" = "longest";
+"TODAY" = "TODAY";
+
+
+"File" = "File";
+"Refresh" = "Refresh";
+"Window" = "Window";
+"Minimize" = "Minimize";
+"Zoom" = "Zoom";
+"Help" = "Help";
+"Send Feedback" = "Send Feedback";
+"Visit Website" = "Visit Website";
+"Bring All to Front" = "Bring All to Front";
+"About TimeMatters" = "About TimeMatters";
+"Quit TimeMatters" = "Quit TimeMatters";

@@ -2,47 +2,130 @@
 //  Database.swift
 //  UserActivity
 //
-//  Created by Sergiy Kurash on 3/2/19.
-//  Copyright © 2019 Sergiy Kurash. All rights reserved.
+//  Created by RoboApps on 3/2/19.
+//  Copyright © 2019 RoboApps. All rights reserved.
 //
 
 import Foundation
+import RealmSwift
 
 class Database {
+    // restart and reset DB from menu
+    var fromFiles = false
     
-    var model = [Session]()
-    var currentSession:Session!
-    var events = [Event]()
     var loading:Bool = false
-    
-    enum ReasonType{
-        
-        case user, display, screen
+    var timer = Timer()
+    let timerInterval:TimeInterval = 300
+    private var loadingList = [String:Bool]()
+    {
+        didSet {
+            self.loading = Array(loadingList.values).contains(true)
+            if !self.loading {
+                UserDefaults.standard.set(Date(), forKey: "updateDate")
+                let nc = NotificationCenter.default
+                nc.post(name: NSNotification.Name("DatabaseHasChanged"), object: nil)
+//                RouterDB().printAllEvents()
+            }
+        }
     }
     
-    enum Switcher{
-        
-        case on, off
-    }
+    //MARK:
     
     init () {
-        // uncomment this line if your class has been inherited from any other class
-        //super.init()
+        scheduledTimerWithTimeInterval()
+        loadAndParceLogs()
     }
     
-    init(output: String) {
-        var lines: [String] = []
-        output.enumerateLines { line, _ in
-            lines.append(line)
+    func scheduledTimerWithTimeInterval(){
+        // Scheduling timer to Call the function "updateCounting" with the interval of 1 seconds
+        timer = Timer.scheduledTimer(timeInterval: timerInterval, target: self, selector: #selector(self.updateCounting), userInfo: nil, repeats: true)
+    }
+    
+    @objc func updateCounting(){
+        NSLog("counting..")
+        loadAndParceLogs()
+    }
+
+    
+    func loadAndParceLogs(){
+        
+        if fromFiles {
+            let realm = try! Realm()
+            try! realm.write {
+                realm.deleteAll()
+            }
         }
-//        print(lines)   // "[Line 1, Line 2, Line 3]"
-//        model = generateSessions(lines: lines)
-//        print (model.count)
+        
+        loadBashNotif()
+        loadBashUser()
+//        loadBashScreenOFF()
+//        loadBashScreenON()
+        
+//        longBash()
     }
     
-    func generateEvents(output: String, events: [Event], reasonType: ReasonType) -> [Event] {
+    func longBash(){
+        let rand = "\(Int.random(in: 1...9999))t"
+        loadingList[rand] = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 20.0) {
+            self.loadingList[rand] = false
+        }
+        
+    }
+    
+    func loadBashNotif(){
+        let rand = "\(Int.random(in: 1...9999))n"
+        loadingList[rand] = true
+        Bash.shell("pmset -g log|grep -e \" Notification \"") { (notification_output) in
+            let contentString = self.fromFiles ? notifFromFile() : notification_output
+            self.generateEvents(output: contentString, reasonType: .display)
+            self.loadingList[rand] = false
+        }
+    }
+
+    func loadBashUser(){
+        let rand = "\(Int.random(in: 1...9999))u"
+        loadingList[rand] = true
+        let whoami = Bash.shell("whoami")
+        var bash_string = "last grep " + whoami + " | grep console"
+        bash_string = bash_string.replacingOccurrences(of: "\n", with: "",
+                                                       options: NSString.CompareOptions.literal, range:nil)
+        Bash.shell(bash_string) { (notification_output) in
+            let contentString = self.fromFiles ? lastUserFromFile() : notification_output
+            self.generateEvents(output: contentString, reasonType: .user)
+            self.loadingList[rand] = false
+        }
+    }
+
+    func loadBashScreenOFF(){
+        let datStr = ""//" --start '2019-02-09'"
+        let rand = "\(Int.random(in: 1...9999))off"
+        loadingList[rand] = true
+        Bash.shell("log show " + datStr + "| grep loginwindow | grep lockScreen | grep \"about to call lockScreen\"") { (notification_output) in
+            self.generateEvents(output: notification_output, reasonType: .screen)
+            self.loadingList[rand] = false
+//            print(self.loadingList)
+        }
+    }
+
+    func loadBashScreenON(){
+        let datStr = ""//" --start '2019-02-09'"
+        let rand = "\(Int.random(in: 1...9999))on"
+        loadingList[rand] = true
+        Bash.shell("log show " + datStr + "| grep loginwindow | grep screenlock") { (notification_output) in
+            self.generateEvents(output: notification_output, reasonType: .screen)
+            self.loadingList[rand] = false
+        }
+    }
+    
+    func generateEvents(output: String, reasonType: ReasonType){
+        
+        let realm = try? Realm()
+        realm?.beginWrite()
+        
         var lines: [String] = []
-        var mutable_events = events
+//        var mutable_events = events
         output.enumerateLines { line, _ in
             lines.append(line)
         }
@@ -53,17 +136,22 @@ class Database {
                 let t_string_array = element.components(separatedBy: " Notification ")
                 let time_string = t_string_array[0].replacingOccurrences(of: " ", with: "",
                                                                          options: NSString.CompareOptions.literal, range:nil)
-                let date = date_from_string(date_string: time_string)
+                let date = time_string.date_from_string() //date_from_string(date_string: time_string)
+                if date == nil  || date!.oldThan(days: 8){
+                    continue
+                }
                 let event = Event()
                 event.event_time = date // пишем время по гринвичу!!
-                event.reason = Event.ReasonType.display
+                event.reason = .display
                 if element.contains("Display is turned on"){
-                    event.switcher = Event.Switcher.on
-                    mutable_events.append(event)
+                    event.switcher = .on
+                    realm?.add(event, update: true)
                 } else if element.contains("Display is turned off"){
-                    event.switcher = Event.Switcher.off
-                    mutable_events.append(event)
+                    event.switcher = .off
+                    realm?.add(event, update: true)
                 }
+//                print (event)
+                
             case .user:
                 let regex = try! NSRegularExpression(pattern: "^.*console[ ]+", options: NSRegularExpression.Options.caseInsensitive)
                 let range = NSMakeRange(0, element.count)
@@ -72,32 +160,52 @@ class Database {
 //                print(modString)
 
                 let dateFormatter = DateFormatter()
+                dateFormatter.locale = Locale(identifier: "en_US_POSIX")
                 dateFormatter.dateFormat = "yyyy EEE MMM d HH:mm"//this your string date format
                 dateFormatter.timeZone = TimeZone.current // пишем время по гринвичу!!
                 let t_string_array = modString.components(separatedBy: " - ").count < 2 ? modString.components(separatedBy: "   still logged in") : modString.components(separatedBy: " - ")
+                if t_string_array.count == 0 {
+                    continue
+                }
                 var date_string = t_string_array[0]
                 let year = Date()
                 date_string = year.year + " " + date_string // ПРОВЕРИТЬ НА БУДУЩЕЕ
                 var date = dateFormatter.date(from: date_string)
+                if date == nil{
+                    continue
+                }
+                
                 if date?.compare(Date()) == .orderedDescending && date != nil { // если дата больше текущей отнимаем год
                     date = Calendar.current.date(byAdding: .year, value: -1, to: date!)!
                 }
+                if date!.oldThan(days: 8){
+                    continue
+                }
+                
                 let event = Event()
-                event.reason = Event.ReasonType.user
-                event.switcher = Event.Switcher.on
+                event.reason = .user
+                event.switcher = .on
                 event.event_time = date
-                mutable_events.append(event)
+//                events.append(event)
+                realm?.add(event, update: true)
                 
                 if modString.contains("(") && modString.contains(")"), let date = date {
                     let endSecond = getSecondFromTime(string: modString)
                     let calendar = Calendar.current
                     let endDate = calendar.date(byAdding: .second, value: endSecond, to: date)!
+                    
+                    if endDate.oldThan(days: 8){
+                        continue
+                    }
+                    
                     let event = Event()
-                    event.reason = Event.ReasonType.user
-                    event.switcher = Event.Switcher.off
+                    event.reason = .user
+                    event.switcher = .off
                     event.event_time = endDate
-                    mutable_events.append(event)
+//                    events.append(event)
+                    realm?.add(event, update: true)
                 }
+//                print (event)
                 
                 // end session time logic
                 // 1 - check for latest "still logged in"
@@ -120,16 +228,18 @@ class Database {
                 dateFormatter.locale = Locale(identifier: "en_US_POSIX")
                 //"2019-03-05 09:41:44.982274+0200"
                 let date = dateFormatter.date(from: time_string)
-                
+                if date == nil || date!.oldThan(days: 8){
+                    continue
+                }
                 let event = Event()
                 event.event_time = date // пишем время по гринвичу!!
                 event.reason = .screen
-                event.switcher = on ? Event.Switcher.on : Event.Switcher.off
-                mutable_events.append(event)
-                
+                event.switcher = on ? .on : .off
+//                events.append(event)
+                realm?.add(event, update: true)
             }
         }
-        return mutable_events
+        try? realm?.commitWrite()
     }
     
     private func getSecondFromTime(string:String) -> Int{
@@ -150,83 +260,6 @@ class Database {
         return 0
     }
     
-    func generateSessions(events: [Event]) -> [Session]{
-        var sessions: [Session] = []
-        var t_session = Session()
-        for (_, element) in events.enumerated() {
-//            print(index, ":", element)
-            if element.switcher == Event.Switcher.on {
-                t_session = Session()
-                t_session.start_time = element.event_time
-
-            } else {
-                t_session.end_time = element.event_time
-                if (t_session.start_time != nil) {
-                    t_session.period = t_session.end_time?.timeIntervalSince(t_session.start_time!)
-                }
-                if t_session.start_time != nil && t_session.end_time != nil{
-                    sessions.append(t_session)
-                }
-            }
-            
-            if t_session.start_time != nil && t_session.end_time == nil /*&& calendar.isDateInToday(t_session.start_time!) */{
-                currentSession = t_session
-            }
-        }
-        return sessions
-    }
-    
-    
-    func getSessions(period:Period? = nil) ->[Session]{
-        if period == nil {
-            return self.model
-        }
-        let a = model.filter { (session) -> Bool in // добавить Same
-            return session.start_time!.compare(period!.startDate) == .orderedDescending && session.end_time!.compare(period!.endDate) == .orderedAscending
-        }
-        
-        return a
-    }
-    
-    func maxPerid(period:Period? = nil) -> TimeInterval {
-        var localSessions = model
-        if period != nil {
-            localSessions = model.filter { (session) -> Bool in // добавить Same
-                return session.start_time!.compare(period!.startDate) == .orderedDescending && session.end_time!.compare(period!.endDate) == .orderedAscending
-            }
-        }
-        let a = localSessions.sorted { (s1, s2) -> Bool in
-            let p1 = s1.period ?? 0
-            let p2 = s2.period ?? 0
-            return p1 < p2
-            }.last
-        return a?.period ?? 0
-    }
-    
-    func addReason(output: String) {
-//        var lines: [String] = []
-//        output.enumerateLines { line, _ in
-//            lines.append(line)
-//        }
-//        for (index, element) in lines.enumerated() {
-//            print(index, ":", element)
-//        }
-    }
-    
-    func date_from_string(date_string: String) -> Date{
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-ddHH:mm:ssZ"
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-        return dateFormatter.date(from:date_string)!
-    }
-    
     
 }
 
-extension Date {
-    var year: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy"
-        return dateFormatter.string(from: self)
-    }
-}

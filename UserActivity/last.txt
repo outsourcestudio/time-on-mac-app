@@ -1,0 +1,10 @@
+osintsev  console                   Wed Mar 27 06:47   still logged in
+osintsev  console                   Tue Mar 19 11:08 - 06:35 (7+19:27)
+osintsev  console                   Sun Mar  3 21:30 - 10:55 (15+13:24)
+osintsev  console                   Wed Jan 16 05:43 - 21:30 (46+15:47)
+osintsev  console                   Sun Dec  9 13:19 - crash (37+16:23)
+osintsev  console                   Wed Nov 21 21:54 - crash (17+15:24)
+osintsev  console                   Fri Oct 12 07:30 - crash (40+15:24)
+osintsev  console                   Thu Sep 20 14:50 - crash (21+16:39)
+osintsev  console                   Thu Aug 16 09:57 - crash (35+04:52)
+osintsev  console                   Sat Aug 11 14:57 - crash (4+18:59)
