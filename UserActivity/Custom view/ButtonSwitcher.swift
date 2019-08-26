@@ -56,7 +56,9 @@ class ButtonSwitcher: NSView {
             let textLayer: CATextLayer = CATextLayer()
             textLayer.string = title
             textLayer.frame = NSRect(x: 0, y: y, width: textSize.width, height: textSize.height)
-            textLayer.font = CGFont("SFProDisplay-Medium" as CFString)!
+            if let f = CGFont("SFProDisplay-Medium" as CFString) {
+                textLayer.font = f
+            }
             textLayer.fontSize = 12.0
             textLayer.contentsScale = NSScreen.main?.backingScaleFactor ?? 1.0
             

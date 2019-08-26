@@ -11,7 +11,7 @@ import Cocoa
 
 class CircleView: CALayer {
     
-    private var sessions = [Session]()
+    private var sessions = [SessionItem]()
     private var sessionLayers = [CAShapeLayer]()
     var innerTrackColor: NSColor!
     var outerTrackColor: NSColor!
@@ -56,9 +56,11 @@ class CircleView: CALayer {
         timeLabel = CATextLayer()
         let timeLabelFrame:NSRect = NSRect(x: 0, y: self.parentFrame.size.height / 2.0 - s / 2.0 + 10.0, width: self.parentFrame.size.width, height: s)
         timeLabel.frame = timeLabelFrame
-        timeLabel.font = CGFont("SFProDisplay-Bold" as CFString)! //NSFont(name: "SFProDisplay-Bold", size: 16)
+        if let f = CGFont("SFProDisplay-Bold" as CFString) {
+            timeLabel.font = f
+        }
         timeLabel.fontSize = 32.0
-        timeLabel.string = "22:12"
+        timeLabel.string = "00:00"
         timeLabel.alignmentMode = .center
         timeLabel.foregroundColor = NSColor.black.cgColor
         timeLabel.backgroundColor = NSColor.clear.cgColor
@@ -69,9 +71,11 @@ class CircleView: CALayer {
         sessionsLabel = CATextLayer()
         let sessionsLabelFrame:NSRect = NSRect(x: 0, y: timeLabelFrame.origin.y - s, width: self.parentFrame.size.width, height: s)
         sessionsLabel.frame = sessionsLabelFrame
-        sessionsLabel.font = CGFont("SFProDisplay-Regular" as CFString)!
+        if let f = CGFont("SFProDisplay-Regular" as CFString) {
+            sessionsLabel.font = f
+        }
         sessionsLabel.fontSize = 16.0
-        sessionsLabel.string = "2 sessions"
+        sessionsLabel.string = "1 session"
         sessionsLabel.alignmentMode = .center
         sessionsLabel.foregroundColor = NSColor.hex("#ff8326").cgColor
         sessionsLabel.backgroundColor = NSColor.clear.cgColor
@@ -80,7 +84,7 @@ class CircleView: CALayer {
         
     }
     
-    func setSessions(sessions:[Session]){
+    func setSessions(sessions:[SessionItem]){
         clearSessions()
         self.sessions = sessions
         let seek:CGFloat = 0 //100 / 86400 * 20
@@ -122,7 +126,9 @@ class CircleView: CALayer {
         }else{
             timeLabel.string = String(format: "0:%0.2d",m)
         }
-
+        if h == 0 && m == 0 {
+            timeLabel.string = String(format: "0:01")
+        }
         
     }
     
@@ -155,6 +161,24 @@ class CircleView: CALayer {
             finalX = secsStart * step
             finalWidth = secsEnd * step - finalX
 //                        print(finalX, finalWidth)
+            return (finalX, finalWidth)
+        }
+        return (0,0)
+    }
+    
+    private func convertDateToLine(session:SessionItem) -> (x:CGFloat, w:CGFloat) {
+        let step:CGFloat = 100 / 86400
+        var finalX:CGFloat = 0
+        var finalWidth:CGFloat = 0
+        let calendar = Calendar.current
+        if let start = session.startDate, let end = session.endDate {
+            var components = calendar.dateComponents([.hour,.minute,.second], from: start)
+            let secsStart:CGFloat = CGFloat(components.hour! * 3600) + CGFloat(components.minute! * 60) + CGFloat(components.second!)
+            components = calendar.dateComponents([.hour,.minute,.second], from: end)
+            let secsEnd:CGFloat = CGFloat(components.hour! * 3600) + CGFloat(components.minute! * 60) + CGFloat(components.second!)
+            finalX = secsStart * step
+            finalWidth = secsEnd * step - finalX
+            //                        print(finalX, finalWidth)
             return (finalX, finalWidth)
         }
         return (0,0)

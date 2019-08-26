@@ -9,39 +9,82 @@
         <customObject id="-2" userLabel="File's Owner"/>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <customView id="c22-O7-iKe" customClass="TrianleView" customModule="UserActivity" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="306" height="25"/>
+        <customView id="c22-O7-iKe" customClass="TrianleView" customModule="TimeMatters" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="335" height="90"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <customView translatesAutoresizingMaskIntoConstraints="NO" id="mxd-6F-cpc">
-                    <rect key="frame" x="148" y="0.0" width="10" height="5"/>
+                    <rect key="frame" x="157" y="1" width="21" height="11"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="5" id="oUA-UP-Dye"/>
-                        <constraint firstAttribute="width" constant="10" id="xOB-Bi-rtL"/>
+                        <constraint firstAttribute="height" constant="11" id="oUA-UP-Dye"/>
+                        <constraint firstAttribute="width" constant="21" id="xOB-Bi-rtL"/>
                     </constraints>
                 </customView>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iTi-BW-uXN">
-                    <rect key="frame" x="0.0" y="5" width="306" height="18"/>
-                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Label" drawsBackground="YES" usesSingleLineMode="YES" id="x1R-ew-wQ8">
-                        <font key="font" size="12" name="SFProDisplay-Regular"/>
-                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                    </textFieldCell>
-                </textField>
+                <customView translatesAutoresizingMaskIntoConstraints="NO" id="uCI-bL-Sfa">
+                    <rect key="frame" x="0.0" y="36" width="335" height="54"/>
+                    <subviews>
+                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="hAX-6S-IUi">
+                            <rect key="frame" x="0.0" y="0.0" width="335" height="54"/>
+                        </customView>
+                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iTi-BW-uXN">
+                            <rect key="frame" x="280" y="16" width="42" height="22"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="22" id="peJ-R3-SW9"/>
+                            </constraints>
+                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Label" id="x1R-ew-wQ8">
+                                <font key="font" size="16" name="SFProDisplay-Medium"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </textFieldCell>
+                        </textField>
+                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="cjf-8l-QVi">
+                            <rect key="frame" x="13" y="16" width="42" height="22"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="22" id="YX9-cx-gRN"/>
+                            </constraints>
+                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="Label" id="F62-eE-U55">
+                                <font key="font" size="16" name="SFProDisplay-Medium"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </textFieldCell>
+                        </textField>
+                    </subviews>
+                    <constraints>
+                        <constraint firstItem="hAX-6S-IUi" firstAttribute="leading" secondItem="uCI-bL-Sfa" secondAttribute="leading" id="3Fw-Sq-P7l"/>
+                        <constraint firstAttribute="bottom" secondItem="hAX-6S-IUi" secondAttribute="bottom" id="Bzt-vL-6LZ"/>
+                        <constraint firstItem="iTi-BW-uXN" firstAttribute="centerY" secondItem="uCI-bL-Sfa" secondAttribute="centerY" id="C7n-Tn-6p5"/>
+                        <constraint firstAttribute="trailing" secondItem="hAX-6S-IUi" secondAttribute="trailing" id="L24-12-emg"/>
+                        <constraint firstAttribute="height" constant="54" id="Q1Q-SP-Xw1"/>
+                        <constraint firstItem="cjf-8l-QVi" firstAttribute="centerY" secondItem="uCI-bL-Sfa" secondAttribute="centerY" id="i8H-ar-rSz"/>
+                        <constraint firstItem="cjf-8l-QVi" firstAttribute="leading" secondItem="uCI-bL-Sfa" secondAttribute="leading" constant="15" id="j6i-ew-OcN"/>
+                        <constraint firstAttribute="trailing" secondItem="iTi-BW-uXN" secondAttribute="trailing" constant="15" id="q3Z-er-Vn3"/>
+                        <constraint firstItem="hAX-6S-IUi" firstAttribute="top" secondItem="uCI-bL-Sfa" secondAttribute="top" id="xd4-wk-unJ"/>
+                    </constraints>
+                </customView>
+                <customView translatesAutoresizingMaskIntoConstraints="NO" id="eOb-39-2Yg">
+                    <rect key="frame" x="0.0" y="11" width="335" height="26"/>
+                </customView>
             </subviews>
             <constraints>
-                <constraint firstAttribute="bottom" secondItem="mxd-6F-cpc" secondAttribute="bottom" id="3P4-6f-E1k"/>
-                <constraint firstAttribute="trailing" secondItem="iTi-BW-uXN" secondAttribute="trailing" id="EDj-Fk-TQf"/>
+                <constraint firstAttribute="bottom" secondItem="mxd-6F-cpc" secondAttribute="bottom" constant="1" id="3P4-6f-E1k"/>
+                <constraint firstItem="eOb-39-2Yg" firstAttribute="top" secondItem="uCI-bL-Sfa" secondAttribute="bottom" constant="-1" id="E2E-0f-yMc"/>
+                <constraint firstAttribute="bottom" secondItem="eOb-39-2Yg" secondAttribute="bottom" constant="11" id="Ebs-lj-CPw"/>
+                <constraint firstAttribute="trailing" secondItem="eOb-39-2Yg" secondAttribute="trailing" id="JdO-qP-YUJ"/>
                 <constraint firstItem="mxd-6F-cpc" firstAttribute="centerX" secondItem="c22-O7-iKe" secondAttribute="centerX" id="RHw-as-BEq"/>
-                <constraint firstItem="mxd-6F-cpc" firstAttribute="top" secondItem="iTi-BW-uXN" secondAttribute="bottom" id="TM6-NI-ep5"/>
-                <constraint firstItem="iTi-BW-uXN" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" id="toV-Ep-cKb"/>
-                <constraint firstItem="iTi-BW-uXN" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" constant="2" id="zXw-NL-3gM"/>
+                <constraint firstItem="eOb-39-2Yg" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" id="aKh-Qu-u21"/>
+                <constraint firstItem="uCI-bL-Sfa" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" id="b4J-ak-TSd"/>
+                <constraint firstItem="uCI-bL-Sfa" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" id="c4l-ns-Sfk"/>
+                <constraint firstAttribute="trailing" secondItem="uCI-bL-Sfa" secondAttribute="trailing" id="pQN-6L-dP9"/>
             </constraints>
             <connections>
-                <outlet property="timeLabel" destination="iTi-BW-uXN" id="WbO-Jc-Ddf"/>
+                <outlet property="bgView" destination="hAX-6S-IUi" id="jsw-vd-kh7"/>
+                <outlet property="bottomView" destination="eOb-39-2Yg" id="nzF-VP-Eih"/>
+                <outlet property="timeLabel" destination="cjf-8l-QVi" id="7OR-Dt-Qbb"/>
+                <outlet property="timeSecLabel" destination="iTi-BW-uXN" id="7OP-1F-9qx"/>
+                <outlet property="topView" destination="uCI-bL-Sfa" id="jqt-ZW-NDH"/>
                 <outlet property="triView" destination="mxd-6F-cpc" id="EnT-Qd-AwC"/>
             </connections>
-            <point key="canvasLocation" x="-45" y="-7.5"/>
+            <point key="canvasLocation" x="-841.5" y="-399"/>
         </customView>
     </objects>
 </document>

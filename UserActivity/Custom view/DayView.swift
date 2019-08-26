@@ -15,7 +15,7 @@ class DayView: NSView, NibLoadable {
     @IBOutlet weak var hoursLabel: NSTextField!
     public var filledColor:NSColor = NSColor.hex("#5063ff")
     var sessionLayers = [CALayer]()
-    var sessions = [Session]()
+    var sessions = [SessionItem]()
     private var borderLayer = CALayer()
     
     override func draw(_ dirtyRect: NSRect) {
@@ -93,7 +93,7 @@ class DayView: NSView, NibLoadable {
         
     }
     
-    func setSessions(sessions:[Session]){
+    func setSessions(sessions:[SessionItem]){
         self.sessions = sessions
     }
  

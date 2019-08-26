@@ -65,6 +65,23 @@ func convertDateToLine(width:CGFloat, session:Session) -> (x:CGFloat, w:CGFloat)
     return (0,0)
 }
 
+func convertDateToLine(width:CGFloat, session:SessionItem) -> (x:CGFloat, w:CGFloat) {
+    let step:CGFloat = width / 86400
+    var finalX:CGFloat = 0
+    var finalWidth:CGFloat = 0
+    let calendar = Calendar.current
+    if let start = session.startDate, let end = session.endDate {
+        var components = calendar.dateComponents([.hour,.minute,.second], from: start)
+        let secsStart:CGFloat = CGFloat(components.hour! * 3600) + CGFloat(components.minute! * 60) + CGFloat(components.second!)
+        components = calendar.dateComponents([.hour,.minute,.second], from: end)
+        let secsEnd:CGFloat = CGFloat(components.hour! * 3600) + CGFloat(components.minute! * 60) + CGFloat(components.second!)
+        finalX = secsStart * step
+        finalWidth = secsEnd * step - finalX
+        return (finalX, finalWidth)
+    }
+    return (0,0)
+}
+
 func getUserImage() -> NSImage? {
     let identity:CBIdentity = CBIdentity(name: NSUserName(), authority: CBIdentityAuthority.default())!
     return identity.image
@@ -116,6 +133,16 @@ func maxPerid(sessions:[Session]) -> TimeInterval {
         }.last
     return a?.period ?? 0
 }
+
+func maxPerid(sessions:[SessionItem]) -> TimeInterval {
+    let a = sessions.sorted { (s1, s2) -> Bool in
+        let p1 = s1.period ?? 0
+        let p2 = s2.period ?? 0
+        return p1 < p2
+        }.last
+    return a?.period ?? 0
+}
+
 
 func delay(_ delay:Double, closure:@escaping ()->()) {
     DispatchQueue.main.asyncAfter(

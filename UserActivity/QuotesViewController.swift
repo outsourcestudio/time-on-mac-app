@@ -50,10 +50,11 @@ class QuotesViewController: NSViewController {
         (self.allDataBtn.cell as! NSButtonCell).backgroundColor=NSColor.clear
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = .center
+        let font:NSFont = NSFont(name: "SFProDisplay-Regular", size: 14.0) ?? NSFont.systemFont(ofSize: 14)
         self.allDataBtn.attributedTitle = NSMutableAttributedString(string: "All sessions".localized(),
                                                                     attributes: [NSAttributedString.Key.foregroundColor: NSColor.hex("#202947"),
                                                                                  NSAttributedString.Key.paragraphStyle: paragraphStyle,
-                                                                                 NSAttributedString.Key.font: NSFont(name: "SFProDisplay-Regular", size: 14.0)!])
+                                                                                 NSAttributedString.Key.font: font])
         
         NotificationCenter.default.addObserver(self, selector: #selector(updateView), name: NSNotification.Name(rawValue: "DatabaseHasChanged"), object: nil)
 
@@ -79,30 +80,37 @@ class QuotesViewController: NSViewController {
         self.userNameField.stringValue = NSFullUserName()
 
         let todayPeriod = Period.todayPeriod()
-        var sessions = RouterDB().getSessions(period: todayPeriod)
-        if let sess = createCurrentSession(period: todayPeriod) {
-            sessions.append(sess)
-        }
+//        var sessions = [Session]()
+//        var sessions = RouterDB().getSessions(period: todayPeriod)
+//        if let sess = createCurrentSession(period: todayPeriod) {
+//            sessions.append(sess)
+//        }
         
-        if sessions.count == 0 {return}
+        let sess = AppManager.shared.getSessionList(period: todayPeriod)
+//        print(sess)
         
-        progressRing.setSessions(sessions: sessions)
+        if sess.count == 0 {return}
+        
+        progressRing.setSessions(sessions: sess)
         
         var allTime:TimeInterval = 0
-        for session in sessions {
+        for session in sess {
             allTime += session.period ?? 0
         }
-        
-        let maxPeriod = maxPerid(sessions: sessions)
-        
+
+        let maxPeriod = maxPerid(sessions: sess)
+
         let (h,m,_) = maxPeriod.intervalAsList()
         if h > 0 {
             longestSessionsTimelabel.stringValue = "Longest session".localized() + String(format: " %0.2d",h) + "h".localized() + String(format: " %0.2d",m) + "m".localized()
         }else{
             longestSessionsTimelabel.stringValue = "Longest session".localized() + String(format: " %0.2d",m) + "m".localized()
         }
-        let curses = sessions.count > 1 ? sessions[sessions.count-2] : sessions[0]
-        userStatusField.stringValue = "last log in".localized() + " " + curses.start_time.toString(format: "HH:mm")
+        if h == 0 && m == 0 {
+            longestSessionsTimelabel.stringValue = "Longest session".localized() + String(format: " 0.1") + "m".localized()
+        }
+        let curses = sess.count > 1 ? sess[sess.count-2] : sess[0]
+        userStatusField.stringValue = "last log in".localized() + " " + curses.startDate.toString(format: "HH:mm")
         userStatusField.textColor = NSColor.hex("#3FC875")
     }
     

@@ -8,13 +8,19 @@
 
 import Cocoa
 
+protocol TodayProgressViewDelegate: class {
+    func showPopupView(session:SessionItem, point: NSPoint)
+    func hidePopupView()
+}
+
 class TodayProgressView: NSView, NibLoadable {
 
     @IBOutlet weak var sessionView: NSView!
     private var sessionLayers = [CALayer]()
-    private var sessions = [Session]()
+    private var sessions = [SessionItem]()
     public var filledColor:NSColor = NSColor.hex("#ff8326")
     private var popupView = TrianleView.createFromNib()!
+    weak var delegate:TodayProgressViewDelegate?
     
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
@@ -46,10 +52,11 @@ class TodayProgressView: NSView, NibLoadable {
     }
     
     override func mouseExited(with event: NSEvent) {
-        self.hidePopup()
+//        self.hidePopup()
+        self.delegate?.hidePopupView()
     }
     
-    func setSessions(sessions:[Session]){
+    func setSessions(sessions:[SessionItem]){
         self.clearSessions()
         self.sessions = sessions
         let h:CGFloat = self.sessionView.bounds.height - 6
@@ -66,7 +73,9 @@ class TodayProgressView: NSView, NibLoadable {
             let textLayer: CATextLayer = CATextLayer()
             textLayer.string = ""
             textLayer.frame = NSRect(x: 0, y: h / 2.0 - 18.0 / 2.0, width: ww, height: 18.0)
-            textLayer.font = CGFont("SFProDisplay-Medium" as CFString)!
+            if let f = CGFont("SFProDisplay-Medium" as CFString) {
+                textLayer.font = f
+            }
             textLayer.fontSize = 12.0
             textLayer.contentsScale = NSScreen.main?.backingScaleFactor ?? 1.0 //UIScreen.main.scale // setRasterizationScale
             let (hour, min, _) = session.period?.intervalAsList() ?? (0,0,0)
@@ -88,9 +97,11 @@ class TodayProgressView: NSView, NibLoadable {
             let startTimeLayer: CATextLayer = CATextLayer()
             let y:CGFloat = self.bounds.size.height - 25
             startTimeLayer.frame = NSRect(x: self.sessionView.frame.origin.x + xx, y:  y , width: 35, height: 18.0)
-            startTimeLayer.font = CGFont("SFProDisplay-Regular" as CFString)!
+            if let f = CGFont("SFProDisplay-Regular" as CFString) {
+                startTimeLayer.font = f
+            }
             startTimeLayer.fontSize = 12.0
-            startTimeLayer.string = session.start_time.toString(format: "HH:mm")
+            startTimeLayer.string = session.startDate.toString(format: "HH:mm")
             startTimeLayer.alignmentMode = .left
             startTimeLayer.foregroundColor = NSColor.black.cgColor
             startTimeLayer.backgroundColor = NSColor.clear.cgColor
@@ -123,15 +134,16 @@ class TodayProgressView: NSView, NibLoadable {
                 layer.backgroundColor = NSColor.black.cgColor
 //                print(layer.frame)
                 let session = self.sessions[i]
-                
-                if let d = session.start_time, let period = session.period  {
-                   popupView.timeLabel.stringValue = d.toString(format: "HH:mm") + " - " + d.addingTimeInterval(period).toString(format: "HH:mm")
-                }
-                NSAnimationContext.runAnimationGroup { (_) in
-                    NSAnimationContext.current.duration = 1.0
-                    popupView.alphaValue = 1
-                }
-                popupView.frame = NSRect(x: layer.frame.origin.x + layer.frame.width / 2.0 - popupView.frame.width / 2.0, y: self.sessionView.frame.origin.y + self.sessionView.frame.height, width: 102, height: 31)
+                self.delegate?.showPopupView(session: session, point:point)
+
+//                if let d = session.startDate, let period = session.period  {
+//                   popupView.timeLabel.stringValue = d.toString(format: "HH:mm") + " - " + d.addingTimeInterval(period).toString(format: "HH:mm")
+//                }
+//                NSAnimationContext.runAnimationGroup { (_) in
+//                    NSAnimationContext.current.duration = 1.0
+//                    popupView.alphaValue = 1
+//                }
+//                popupView.frame = NSRect(x: layer.frame.origin.x + layer.frame.width / 2.0 - popupView.frame.width / 2.0, y: self.sessionView.frame.origin.y + self.sessionView.frame.height, width: 102, height: 31)
                 break
             }
         }

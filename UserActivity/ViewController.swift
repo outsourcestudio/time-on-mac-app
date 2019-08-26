@@ -8,10 +8,11 @@
 
 import Cocoa
 import LaunchAtLogin
+import RealmSwift
 
 class ViewController: NSViewController, NSWindowDelegate {
     
-    let windowSize = NSSize(width: 900, height: 651)
+    let windowSize = NSSize(width: 1190, height: 651)
     
     @IBOutlet weak var todayLabel: NSTextField!
     @IBOutlet weak var profileImage: NSImageView!
@@ -27,6 +28,8 @@ class ViewController: NSViewController, NSWindowDelegate {
     @IBOutlet weak var label24: NSTextField!
     @IBOutlet weak var switcherBox: NSView!
     
+    @IBOutlet weak var rightScrollView: NSScrollView!
+    @IBOutlet weak var rightView: NSView!
     @IBOutlet weak var topHeightMonth: NSLayoutConstraint!
     private var popupView = TrianleView.createFromNib()!
     @IBOutlet weak var contentClipView: NSClipView!
@@ -35,6 +38,7 @@ class ViewController: NSViewController, NSWindowDelegate {
     @IBOutlet weak var total_time: NSTextField!
     @IBOutlet weak var total_sessions: NSTextField!
     @IBOutlet weak var longest_session_time: NSTextField!
+    @IBOutlet weak var rightAppTotalLabel: NSTextField!
     var dayView:DayView?
     var weekView = [DayView]()
     var monthView = [DayView]()
@@ -43,10 +47,13 @@ class ViewController: NSViewController, NSWindowDelegate {
     var weekMove:Int = 0
     var monthMove:Int = 0
     var yearMove:Int = 0
-    //MARK:
+    //MARK: -
     override func viewDidLoad() {
         super.viewDidLoad()
         print("ViewController viewDidLoad")
+        
+        rightView.wantsLayer = true
+        rightView.layer?.backgroundColor = NSColor.hex("#51586E").cgColor
         
         // config main view
         view.wantsLayer = true
@@ -69,6 +76,7 @@ class ViewController: NSViewController, NSWindowDelegate {
         
         
         todayView = TodayProgressView.createFromNib()!
+        todayView.delegate = self
         todayView.frame.size = self.todayBox.frame.size
         self.todayBox.addSubview(todayView)
         
@@ -132,6 +140,8 @@ class ViewController: NSViewController, NSWindowDelegate {
     }
     
     override func mouseEntered(with event: NSEvent) {
+        super.mouseEntered(with: event)
+//        print("mouseEntered")
         let p = (self.view.window?.contentView?.convert(event.locationInWindow, to: self.view))!
         if prevButton.frame.contains(p) {
             prevButton.image = NSImage(imageLiteralResourceName: "prevIcon_s")
@@ -147,25 +157,108 @@ class ViewController: NSViewController, NSWindowDelegate {
     }
     
     override func mouseExited(with event: NSEvent) {
-        let p = (self.view.window?.contentView?.convert(event.locationInWindow, to: self.view))!
-        if prevButton.frame.contains(p) {
-            prevButton.image = NSImage(imageLiteralResourceName: "nextIcon_s")
-        }else{
-            prevButton.image = NSImage(imageLiteralResourceName: "prevIcon")
-        }
-        
-        if nextButton.frame.contains(p) && nextButton.isEnabled {
-            nextButton.image = NSImage(imageLiteralResourceName: "nextIcon_s")
-        }else{
-            nextButton.image = NSImage(imageLiteralResourceName: "nextIcon")
-        }
+        super.mouseExited(with: event)
+//        print("mouseExited")
+//        let p = (self.view.window?.contentView?.convert(event.locationInWindow, to: self.view))!
+//        if prevButton.frame.contains(p) {
+//            prevButton.image = NSImage(imageLiteralResourceName: "nextIcon_s")
+//        }else{
+//            prevButton.image = NSImage(imageLiteralResourceName: "prevIcon")
+//        }
+//        
+//        if nextButton.frame.contains(p) && nextButton.isEnabled {
+//            nextButton.image = NSImage(imageLiteralResourceName: "nextIcon_s")
+//        }else{
+//            nextButton.image = NSImage(imageLiteralResourceName: "nextIcon")
+//        }
+        nextButton.image = NSImage(imageLiteralResourceName: "nextIcon")
+        prevButton.image = NSImage(imageLiteralResourceName: "prevIcon")
     }
     
     override func mouseMoved(with event: NSEvent) {
         super.mouseMoved(with: event)
-        
+//        print("mouseMoved")
         let p = (self.view.window?.contentView?.convert(event.locationInWindow, to: self.contentClipView))!
         searchAndShowPpopupViews(point: p,event: event)
+    }
+    
+    func configRightAppsPanel(appSessions:[SessionItem]){
+        let realm = try! Realm()
+        var allSessionsPeriod:TimeInterval = 0
+        appSessions.forEach { (s) in
+            allSessionsPeriod += s.endDate!.timeIntervalSince(s.startDate)
+        }
+        var allAppsCounts:TimeInterval = 0
+        var allApps = [String : TimeInterval]()
+        appSessions.forEach { (s) in
+            allAppsCounts += s.allAppsCounts()
+            s.apps.forEach({ (a) in
+                if allApps[a.appID] != nil {
+                    allApps[a.appID] = allApps[a.appID]! + a.count
+                }else{
+                    allApps[a.appID] = a.count
+                }
+            })
+        }
+        let sorted = allApps.sorted { $0.1 < $1.1 }
+        
+//        print("appSessions ", allSessionsPeriod)
+//        print("allApps ", allApps)
+
+        
+//        sorted.forEach { (k,v) in
+//            print(k, v)
+//        }
+        
+        let x:CGFloat = 10
+        var y:CGFloat = 0
+        let w:CGFloat = self.rightView.bounds.width - x * 2.0
+        let h:CGFloat = 56
+        let sp:CGFloat = 10
+        var hh:CGFloat = CGFloat(sorted.count) * h + (CGFloat(sorted.count - 1) * sp)
+        
+        if hh < self.rightScrollView.frame.height {
+            y = self.rightScrollView.frame.height - hh
+            hh = self.rightScrollView.frame.height
+        }
+
+        let docView = NSClipView()
+        docView.frame = NSRect(x: 0, y: 0, width: self.rightScrollView.frame.width, height: hh)
+        docView.backgroundColor = NSColor.clear
+        docView.drawsBackground = true
+        docView.wantsLayer = true
+        
+        sorted.forEach { (k,val) in
+            if let item = realm.objects(AppInfoItem.self).filter("appID == '\(k)'").first {
+//                let valKoef = TimeInterval(val)// / AppManager.activityAppTimerPeriod
+                let pers = TimeInterval(val) / allAppsCounts * 100
+                let v = MainDetailAppInfoCell.createFromNib()!
+                v.nameLabel.stringValue = (item.appName ?? "")// + " \(val)"
+                v.percentLabel.stringValue = "\(Int(pers)) %"
+                v.progressWidth.constant = v.progressWidth.constant * CGFloat(pers / 100.0)
+                if let urlStr = item.appIcon, let url = URL(string: urlStr), let image = NSImage(contentsOf: url) {
+                    v.image.image = image
+                }
+                let (hh,mm,ss) = TimeInterval(allSessionsPeriod * pers / 100.0).intervalAsList()
+                if hh > 0 {
+                    v.timeLabel.stringValue = String(format: "%0.2d",hh) + "hr".localized()  + " " + String(format: "%0.2d",mm) + "m".localized()
+                }else if hh == 0 && mm == 0 && ss > 0{
+                    v.timeLabel.stringValue = String(format: "%0.2d",ss) + "s".localized()
+                }else{
+                    v.timeLabel.stringValue = String(format: "%0.2d",mm) + "m".localized()
+                }
+                v.wantsLayer = true
+//                v.layer?.backgroundColor = NSColor.red.cgColor
+//                v.layer?.borderWidth = 0.5
+                v.frame = NSRect(x: x, y: y, width: w, height: h)
+                y += h + sp
+                docView.addSubview(v)
+            }
+        }
+        self.rightScrollView.documentView = docView
+        self.rightScrollView.contentView.scroll(CGPoint(x: 0, y: hh))
+        self.rightScrollView.wantsLayer = true
+        
     }
     
     func showLaunchAtStartAlert(){
@@ -211,6 +304,9 @@ class ViewController: NSViewController, NSWindowDelegate {
     }
     
     func searchAndShowPpopupViews(point:NSPoint, event:NSEvent){
+//        popupView.frame = NSRect(x: 100, y: 200, width: 220, height: 250)
+//        popupView.configView()
+//        return;
         popupView.alphaValue = 0
         let pp = (self.view.window?.contentView?.convert(event.locationInWindow, to: nil))!
         self.contentClipView.subviews.forEach { (view) in
@@ -223,21 +319,23 @@ class ViewController: NSViewController, NSWindowDelegate {
                         for (i, layer) in layers.enumerated() {
                             layer.backgroundColor = NSColor.hex("#5063ff").cgColor
                             if layer.frame.contains(p) {
-                                popupView.frame = NSRect(x: pp.x - 50.0, y: pp.y + 5.0, width: 102, height: 31)
+                                popupView.frame = NSRect(x: pp.x - 50.0, y: pp.y + 5.0, width: 202, height: 101)
                                 popupView.alphaValue = 1
                                 layer.backgroundColor = NSColor.black.cgColor
                                 let session = (childView as! DayView).sessions[i]
-                                if let d = session.start_time, let period = session.period  {
-                                    popupView.timeLabel.stringValue = d.toString(format: "HH:mm") + " - " + d.addingTimeInterval(period).toString(format: "HH:mm")
-                                }
+                                let c = session.apps.count > 3 ? 3 : session.apps.count
+                                popupView.frame = NSRect(x: pp.x - 100.0, y: pp.y + 5.0, width: 202, height: 54 + 40 + CGFloat(c * 35) + CGFloat((c - 1) * 10))
+                                popupView.configView(session: session, rowCount: 3)
                             }
                         }
                     }else if childView is MonthView {
+                        return;
                         let monthView = (childView as! MonthView)
                         //                    print("MonthView")
                         let sessionsView = monthView.sessionView!
                         let layers = monthView.sessionLayers
                         let byDays = monthView.sessionsByDays()
+                        let byDays2 = monthView.sessionsByDays2()
                         let p = view.convert(point, to: sessionsView)
                         for (i, layer) in layers.enumerated() {
                             if byDays[i+1] != nil {
@@ -262,20 +360,22 @@ class ViewController: NSViewController, NSWindowDelegate {
             })
         }
     }
-    
+
     func configTodayView(){
         
         todayView.frame.size = self.todayBox.frame.size
         
         delay(0.1) {
             let period = Period.todayPeriod()
-            var sessions = RouterDB().getSessions(period: period)
-            if let sess = createCurrentSession(period: period) {
-                sessions.append(sess)
-            }
-            self.todayView.setSessions(sessions: sessions)
+            let sess = AppManager.shared.getSessionList(period: period)
+//            var sessions = RouterDB().getSessions(period: period)
+//            if let sess = createCurrentSession(period: period) {
+//                sessions.append(sess)
+//            }
+            self.todayView.setSessions(sessions: sess)
         }
     }
+    
     
     
     func windowDidEndLiveResize(_ notification: Notification) {
@@ -312,7 +412,7 @@ class ViewController: NSViewController, NSWindowDelegate {
             print("default")
         }
         
-        topHeightMonth.constant = selectedFilter == .year ? 31.0 : 21.0
+        topHeightMonth.constant = selectedFilter == .year ? 11.0 : 1.0
         
         label00.isHidden = selectedFilter == .year ? true : false
         label24.isHidden = selectedFilter == .year ? true : false
@@ -321,29 +421,34 @@ class ViewController: NSViewController, NSWindowDelegate {
     
     func updateSummedValues(period:Period){
         
-        var sessions = RouterDB().getSessions(period: period)
-        if Period.ifTodayInPeriod(period: period) {
-            if let sess = createCurrentSession(period: period) {
-                sessions.append(sess)
-            }
-        }
+//        var sessions = RouterDB().getSessions(period: period)
+//        if Period.ifTodayInPeriod(period: period) {
+//            if let sess = createCurrentSession(period: period) {
+//                sessions.append(sess)
+//            }
+//        }
         
-        if sessions.count == 1 {
+        let sess = AppManager.shared.getSessionList(period: period)
+        
+        if sess.count == 1 {
             total_sessions.stringValue = "1 " + "session".localized()
         }else{
-            total_sessions.stringValue = "\(sessions.count) " + "sessions".localized()
+            total_sessions.stringValue = "\(sess.count) " + "sessions".localized()
         }
         
         var allTime:TimeInterval = 0
-        for session in sessions {
+        for session in sess {
             allTime += session.period ?? 0
         }
         
         var (h,m,_) = allTime.intervalAsList()
         total_time.stringValue = String(format: "%0.2d ",h) + "hours".localized() + " " + String(format: "%0.2d ",m) + "min".localized()
+        m = (m == 0 && h == 0 && sess.count != 0) ? 1 : m
+        rightAppTotalLabel.stringValue = "Total " + String(format: "%0.2d ",h) + "hours".localized() + " " + String(format: "%0.2d ",m) + "min".localized()
         
-        (h,m,_) = maxPerid(sessions: sessions).intervalAsList()
+        (h,m,_) = maxPerid(sessions: sess).intervalAsList()
         longest_session_time.stringValue = String(format: "%0.2d",h) + "h".localized() + " " + String(format: "%0.2d",m) + "m".localized() + " " + "longest".localized()
+        
     }
     
     override func viewDidDisappear() {
@@ -427,6 +532,8 @@ class ViewController: NSViewController, NSWindowDelegate {
             y = (self.contentView.bounds.height - CGFloat(yearDays.count*39+7))/2.0
         }
         
+        var appSessions = [SessionItem]()
+        
         yearDays.forEach { (period) in
             let month = MonthView.createFromNib()!
             month.frame = NSRect(x: 0, y: y, width: size.width, height: month.frame.size.height)
@@ -434,14 +541,19 @@ class ViewController: NSViewController, NSWindowDelegate {
 //            month.layer?.borderWidth = 1
             view.addSubview(month)
             
-            var sessions = RouterDB().getSessions(period: period)
-            if Period.ifTodayInPeriod(period: period) {
-                if let sess = createCurrentSession(period: period) {
-                    sessions.append(sess)
-                }
-            }
+//            var sessions = RouterDB().getSessions(period: period)
+//            if Period.ifTodayInPeriod(period: period) {
+//                if let sess = createCurrentSession(period: period) {
+//                    sessions.append(sess)
+//                }
+//            }
+            
+            let sess = AppManager.shared.getSessionList(period: period)
+            appSessions.append(contentsOf: sess)
+            
+            
             month.setCurrentMonthDays(date: period.startDate)
-            month.setSessions(sessions: sessions)
+            month.setSessions(sessions: sess)
             y += 39
             self.yearView.append(month)
         }
@@ -450,6 +562,7 @@ class ViewController: NSViewController, NSWindowDelegate {
         
         let period = Period(start: yearDays.last!.startDate, end: yearDays.first!.endDate)
         updateSummedValues(period: period)
+        configRightAppsPanel(appSessions: appSessions)
         
         //config selector stat
         selectSubInfoField.stringValue = ""
@@ -490,6 +603,8 @@ class ViewController: NSViewController, NSWindowDelegate {
             y = (self.contentView.bounds.height - CGFloat(monthDays.count*44))/2.0
         }
         
+        var appSessions = [SessionItem]()
+        
         monthDays.forEach { (period) in
             let day = DayView.createFromNib()!
             day.frame = NSRect(x: 0, y: y, width: size.width, height: day.frame.size.height)
@@ -498,13 +613,16 @@ class ViewController: NSViewController, NSWindowDelegate {
             
             view.addSubview(day)
             
-            var sessions = RouterDB().getSessions(period: period)
-            if Period.ifTodayInPeriod(period: period) {
-                if let sess = createCurrentSession(period: period) {
-                    sessions.append(sess)
-                }
-            }
-            day.setSessions(sessions: sessions)
+            let sess = AppManager.shared.getSessionList(period: period)
+            appSessions.append(contentsOf: sess)
+            
+//            var sessions = RouterDB().getSessions(period: period)
+//            if Period.ifTodayInPeriod(period: period) {
+//                if let sess = createCurrentSession(period: period) {
+//                    sessions.append(sess)
+//                }
+//            }
+            day.setSessions(sessions: sess)
             day.dayDateLabel.stringValue = period.startDate.toString(format: "MMM, d").capitalized
             y += 44
             self.monthView.append(day)
@@ -516,6 +634,7 @@ class ViewController: NSViewController, NSWindowDelegate {
         
         let period = Period(start: monthDays.last!.startDate, end: monthDays.first!.endDate)
         updateSummedValues(period: period)
+        configRightAppsPanel(appSessions: appSessions)
         
         //config selector stat
         selectSubInfoField.stringValue = monthDays.last!.startDate.toString(format: "yyyy").capitalized
@@ -554,6 +673,8 @@ class ViewController: NSViewController, NSWindowDelegate {
             y = (self.contentView.bounds.height - CGFloat(weekDays.count) * (size.height + CGFloat(bh)))/2.0
         }
         
+        var appSessions = [SessionItem]()
+        
         weekDays.forEach { (period) in
             let day = DayView.createFromNib()!
             day.frame = NSRect(x: 0, y: y, width: size.width, height: day.frame.size.height)//size.height
@@ -562,13 +683,16 @@ class ViewController: NSViewController, NSWindowDelegate {
             
             view.addSubview(day)
             
-            var sessions = RouterDB().getSessions(period: period)
-            if Period.ifTodayInPeriod(period: period) {
-                if let sess = createCurrentSession(period: period) {
-                    sessions.append(sess)
-                }
-            }
-            day.setSessions(sessions: sessions)
+            let sess = AppManager.shared.getSessionList(period: period)
+            appSessions.append(contentsOf: sess)
+            
+//            var sessions = RouterDB().getSessions(period: period)
+//            if Period.ifTodayInPeriod(period: period) {
+//                if let sess = createCurrentSession(period: period) {
+//                    sessions.append(sess)
+//                }
+//            }
+            day.setSessions(sessions: sess)
             day.dayDateLabel.stringValue = period.startDate.toString(format: "EEE, d").capitalized
             y += 44.0//bh + size.height
             self.weekView.append(day)
@@ -581,6 +705,7 @@ class ViewController: NSViewController, NSWindowDelegate {
 //
         let period = Period(start: weekDays.last!.startDate, end: weekDays.first!.endDate)
         updateSummedValues(period: period)
+        configRightAppsPanel(appSessions: appSessions)
         
         //config selector stat
         selectSubInfoField.stringValue = weekDays.last!.startDate.toString(format: "yyyy")
@@ -608,9 +733,12 @@ class ViewController: NSViewController, NSWindowDelegate {
     
     @objc func updateInsight(_ sender: Notification) {
         
-        changeStatsView()
-        configTodayView()
-        
+        NSAnimationContext.runAnimationGroup { (_) in
+            NSAnimationContext.current.duration = 0.7
+            self.changeStatsView()
+            self.configTodayView()
+        }
+
     }
     
     func formatEventDescription(event: Event) -> String {
@@ -637,6 +765,31 @@ class ViewController: NSViewController, NSWindowDelegate {
     }
 }
 
-
-
-
+extension ViewController : TodayProgressViewDelegate {
+    
+    func hidePopupView() {
+        popupView.alphaValue = 0
+        let layers = self.todayView.sessionView.layer?.sublayers ?? []
+        for (_, layer) in layers.enumerated() {
+            layer.backgroundColor = NSColor.hex("#ff8326").cgColor
+        }
+    }
+    
+    func showPopupView(session: SessionItem, point: NSPoint) {
+        let a = self.todayView.sessionView.layer?.sublayers ?? []
+        let popupWidth:CGFloat = 200
+        for (_, layer) in a.enumerated() {
+            if layer.frame.contains(point) {
+                var x = layer.frame.origin.x + self.todayView.sessionView.frame.origin.x + self.todayBox.frame.origin.x - ( popupWidth / 2 )
+                x += layer.frame.size.width / 2 
+                let y = self.todayBox.frame.midY + 50
+                popupView.alphaValue = 1
+                let c = session.apps.count > TrianleView.rows ? TrianleView.rows : session.apps.count
+                popupView.frame = NSRect(x: x, y: y, width: popupWidth, height: 54 + 40 + CGFloat(c * 35) + CGFloat((c - 1) * 10))
+                popupView.configView(session: session)
+                
+            }
+        }
+    }
+    
+}

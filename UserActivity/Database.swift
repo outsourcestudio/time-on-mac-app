@@ -8,8 +8,14 @@
 
 import Foundation
 import RealmSwift
+import AppleScriptObjC // ASOC adds its own 'load scripts' method to NSBundle
+import asl
 
 class Database {
+    
+    // AppleScriptObjC object for communicating with iTunes
+    var iTunesBridge: iTunesBridge?
+    
     // restart and reset DB from menu
     var fromFiles = false
     
@@ -75,6 +81,9 @@ class Database {
     }
     
     func loadBashNotif(){
+        
+        loadAppleBashNotif()
+        
         let rand = "\(Int.random(in: 1...9999))n"
         loadingList[rand] = true
         Bash.shell("pmset -g log|grep -e \" Notification \"") { (notification_output) in
@@ -82,6 +91,86 @@ class Database {
             self.generateEvents(output: contentString, reasonType: .display)
             self.loadingList[rand] = false
         }
+    }
+    
+    func loadAppleBashNotif(){
+//        let source = "do shell script \"/bin/bash\nwhoami\""
+//
+//        let script = NSAppleScript(source: source)!
+//        var errorDict: NSDictionary? = nil
+//        let output = script.executeAndReturnError(&errorDict)
+//        print (output.stringValue ?? "nil")
+//
+//        let source2 = "set outputs to do shell script \"last grep " + output.stringValue! + "\""
+//        print (source2)
+//        let script2 = NSAppleScript(source: source2)!
+//        var errorDict2: NSDictionary? = nil
+//        let output2 = script2.executeAndReturnError(&errorDict2)
+//        let xxx = output2.numberOfItems
+//        print (output2.stringValue)
+//
+//        let source3 = "do shell script \"pmset -g log\""
+//        print (source3)
+//        let script3 = NSAppleScript(source: source3)!
+//        var errorDict3: NSDictionary? = nil
+//        let output3 = script3.executeAndReturnError(&errorDict3)
+//        print (output3.stringValue)
+//
+//        // --------------------------------------------------------
+//        let scriptFolderUrl = try! FileManager.default.url(for: .applicationScriptsDirectory,
+//                                                           in: .userDomainMask, appropriateFor: nil, create: true)
+//        if let scriptUrl = URL(string: "display.scpt", relativeTo: scriptFolderUrl) {
+//            // --------------------------------------------------------
+//            // same below
+//            do {
+//                let task = try NSUserUnixTask(url: scriptUrl)
+//                task.execute(withArguments: [ "" ])
+//                debugPrint("OK")
+//            } catch let error {
+//                debugPrint(error)
+//            }
+//        } else {
+//            debugPrint("Script not found")
+//        }
+//        Bundle.main.loadAppleScriptObjectiveCScripts()
+//        // create an instance of iTunesBridge script object for Swift code to use
+//        let iTunesBridgeClass: AnyClass = NSClassFromString("iTunesBridge")!
+//        self.iTunesBridge = iTunesBridgeClass.alloc() as! iTunesBridge
+//        let whoami = self.iTunesBridge!.whoami
+//        print (whoami)
+//        let pmset = self.iTunesBridge!.display
+//        print (pmset)
+//        print(getBatteryState().flatMap{$0})
+        
+//        let apps = NSWorkspace.shared.runningApplications
+//         [[NSWorkspace sharedWorkspace] runningApplications]
+//        let curent NSWorkspace.shared.curr
+
+
+    }
+    
+    
+    func getBatteryState() -> [String?]
+    {
+        let task = Process()
+        let pipe = Pipe()
+        task.launchPath = "/usr/bin/pmset"
+        task.arguments = ["-g", "log"]
+        task.standardOutput = pipe
+        task.launch()
+        
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let output = NSString(data: data, encoding: String.Encoding.utf8.rawValue) as! String
+        
+        let batteryArray = output.components(separatedBy: ";")
+        let source = output.components(separatedBy: "'")[1]
+        let state = batteryArray[1].trimmingCharacters(in: NSCharacterSet.whitespaces).capitalized
+        let percent = String.init(batteryArray[0].components(separatedBy: ")")[1].trimmingCharacters(in: NSCharacterSet.whitespaces).characters.dropLast())
+        var remaining = String.init(batteryArray[2].characters.dropFirst().split(separator: " ")[0])
+        if(remaining == "(no"){
+            remaining = "Calculating"
+        }
+        return [source, state, percent, remaining]
     }
 
     func loadBashUser(){
@@ -96,6 +185,7 @@ class Database {
             self.generateEvents(output: contentString, reasonType: .user)
             self.loadingList[rand] = false
         }
+        
     }
 
     func loadBashScreenOFF(){

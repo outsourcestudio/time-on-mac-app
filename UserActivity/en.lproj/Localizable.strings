@@ -16,6 +16,9 @@
 "sessions" = "sessions";
 "m" = "m"; //минуты
 "h" = "h"; //часы
+"s" = "s";
+
+"sec" = "sec";
 
 "hr" = "hr";
 

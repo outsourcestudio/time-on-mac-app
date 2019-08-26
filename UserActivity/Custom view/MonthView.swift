@@ -13,7 +13,7 @@ class MonthView: NSView, NibLoadable {
     @IBOutlet weak var sessionView: NSView!
     @IBOutlet weak var dayDateLabel: NSTextField!
     var sessionLayers = [CALayer]()
-    var sessions = [Session]()
+    var sessions = [SessionItem]()
     private var currentMonthDays = 0
     private var currentPeriodDate:Date!
     
@@ -50,19 +50,20 @@ class MonthView: NSView, NibLoadable {
         }
     }
     
-    func setSessions(sessions:[Session]){
+    func setSessions(sessions:[SessionItem]){
 //        self.sessions = sessions
         let startDate = currentPeriodDate.startOfMonth()
         let days = startDate.getDaysInMonth()
         for i in 1...days {
             let p = Period.periodLastDays(days: -(i-1), from: currentPeriodDate)
-            let s = RouterDB().getSessions(period: p)
-            self.sessions.append(contentsOf: s)
-            if Period.ifTodayInPeriod(period: p) {
-                if let sess = createCurrentSession(period: p) {
-                    self.sessions.append(sess)
-                }
-            }
+            let sess = AppManager.shared.getSessionList(period: p)
+//            let s = RouterDB().getSessions(period: p)
+            self.sessions.append(contentsOf: sess)
+//            if Period.ifTodayInPeriod(period: p) {
+//                if let sess = createCurrentSession(period: p) {
+//                    self.sessions.append(sess)
+//                }
+//            }
         }
         
         
@@ -81,13 +82,34 @@ class MonthView: NSView, NibLoadable {
         
         var array = [Int:TimeInterval]()
         sessions.forEach { (session) in
-            let days = calendar.component(.day, from: session.start_time)
+            let days = calendar.component(.day, from: session.startDate)
 //            print(days, session.start_time!, session.end_time!, session.period!, session.period!.intervalAsList())
             if let period = session.period {
                 if let s = array[days] {
                     array[days] = s + period
                 }else{
                     array[days] = period
+                }
+            }
+        }
+        return array
+    }
+    
+    func sessionsByDays2() -> [Int: [SessionItem]] {
+        var calendar = Calendar.current
+        calendar.locale = Locale.current
+        calendar.timeZone = TimeZone.current
+        
+        var array = [Int: [SessionItem]]()
+        sessions.forEach { (session) in
+            let days = calendar.component(.day, from: session.startDate)
+            if let period = session.period {
+                if let s = array[days] {
+                    var a = Array(s)
+                    a.append(session)
+//                    array[days] = s + period
+                }else{
+                    array[days] = [session]
                 }
             }
         }

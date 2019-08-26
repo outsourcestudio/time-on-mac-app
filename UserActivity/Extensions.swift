@@ -289,6 +289,12 @@ extension NibLoadable where Self: NSView {
 
 extension String {
     
+    func toDate(format:String) -> Date? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = format
+        return dateFormatter.date(from: self)
+    }
+    
     func date_from_string() -> Date? {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-ddHH:mm:ssZ"
